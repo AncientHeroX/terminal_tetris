@@ -17,7 +17,7 @@ OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.c.o,$(SRCS))
 
 $(BIN_DIR)/$(APPNAME): $(OBJS)
 	mkdir -p $(BIN_DIR)
-	$(CC) -o $@ $< $(LDFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
 	mkdir -p $(BUILD_DIR)

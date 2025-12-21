@@ -1,20 +1,17 @@
 #include <stdio.h>
-#include <ncurses.h>
+#include <stdlib.h>
+#include "view.h"
 
 int main()
 {
+  View* game_view = (View*)malloc(sizeof(View));
 
-  initscr();
-  cbreak();
-  noecho();
-  curs_set(0);
+  view_create(game_view);
 
-  addstr("Hello, world");
-  refresh();
   while(1)
   {
   }
 
-  endwin();
+  view_destroy(game_view);
   return 0;
 }
