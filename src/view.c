@@ -1,4 +1,16 @@
 #include "view.h"
+#include <ncurses.h>
+
+void place_block(const View* view, const float pos_x, const float pos_y)
+{
+  for(int x = 0; x < BLOCK_WIDTH; x++)
+  {
+    for(int y = 0; y < BLOCK_HEIGHT; y++)
+    {
+      mvwaddch(view->game, pos_y + y, pos_x + x, ACS_CKBOARD);
+    }
+  }
+}
 
 WINDOW* create_newwin(int height, int width, int starty, int startx)
 {
@@ -23,6 +35,7 @@ int view_create(View* view)
   cbreak();
   noecho();
   curs_set(0);
+
   refresh();
 
   int view_width, view_height;
@@ -30,10 +43,10 @@ int view_create(View* view)
 
   int game_window_width = BLOCK_WIDTH * 10;
 
-  view->gameWindow = create_newwin(view_height,
-                                   game_window_width,
-                                   0,
-                                   (view_width / 2) - (game_window_width / 2));
+  view->game = create_newwin(view_height,
+                             game_window_width,
+                             0,
+                             (view_width / 2) - (game_window_width / 2));
 
   return 0;
 }
@@ -43,3 +56,9 @@ int view_destroy(View* view)
   endwin();
   return 0;
 }
+
+void view_refresh(View* view)
+{
+  // wrefresh(view->next_block);
+}
+void view_clear(View* view) { werase(view->game); }
