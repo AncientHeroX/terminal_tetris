@@ -1,9 +1,8 @@
 #pragma once
 #include <ncurses.h>
 
-#define BLOCK_WIDTH 8
-#define BLOCK_HEIGHT 4
-
+#define BLOCK_WIDTH 4
+#define BLOCK_HEIGHT 2
 
 typedef struct
 {

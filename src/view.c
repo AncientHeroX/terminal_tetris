@@ -1,6 +1,9 @@
 #include "view.h"
 #include <ncurses.h>
 
+// TODO (eduard):  Delete later
+#define DEBUG
+
 void place_block(const View* view, const float pos_x, const float pos_y)
 {
   for(int x = 0; x < BLOCK_WIDTH; x++)
@@ -41,7 +44,7 @@ int view_create(View* view)
   int view_width, view_height;
   getmaxyx(stdscr, view_height, view_width);
 
-  int game_window_width = BLOCK_WIDTH * 10;
+  int game_window_width = (BLOCK_WIDTH * 10) + 2;
 
   view->game = create_newwin(view_height,
                              game_window_width,
@@ -57,8 +60,51 @@ int view_destroy(View* view)
   return 0;
 }
 
+#define redraw_border(window)                                                  \
+  wborder(window,                                                              \
+          ACS_VLINE,                                                           \
+          ACS_VLINE,                                                           \
+          ACS_HLINE,                                                           \
+          ACS_HLINE,                                                           \
+          ACS_ULCORNER,                                                        \
+          ACS_URCORNER,                                                        \
+          ACS_LLCORNER,                                                        \
+          ACS_LRCORNER)
+
 void view_refresh(View* view)
 {
-  // wrefresh(view->next_block);
+
+#ifdef DEBUG
+  int w_h, w_w;
+  getmaxyx(view->game, w_h, w_w);
+  int dark = 0;
+
+  for(int y = 0; y < w_h; y++)
+  {
+    if(y % BLOCK_HEIGHT == 0)
+    {
+      dark = !dark;
+    }
+    for(int x = 1; x < w_w - 1; x++)
+    {
+      if(x % BLOCK_WIDTH == 1)
+      {
+        dark = !dark;
+      }
+      if(dark)
+      {
+        mvwaddch(view->game, y, x, 177);
+      }
+      else
+      {
+        mvwaddch(view->game, y, x, ACS_CKBOARD);
+      }
+    }
+  }
+#endif
+
+  redraw_border(view->game);
+
+  wrefresh(view->game);
 }
 void view_clear(View* view) { werase(view->game); }

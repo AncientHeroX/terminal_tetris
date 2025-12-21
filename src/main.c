@@ -26,20 +26,8 @@ int main()
       view_clear(game_view);
 
       // DRAW GAME
-      place_block(game_view, 5, y);
-      y += 0.0002f;
 
-      wborder(game_view->game,
-              ACS_VLINE,
-              ACS_VLINE,
-              ACS_HLINE,
-              ACS_HLINE,
-              ACS_ULCORNER,
-              ACS_URCORNER,
-              ACS_LLCORNER,
-              ACS_LRCORNER);
-
-      wrefresh(game_view->game);
+      view_refresh(game_view);
     }
   }
 
