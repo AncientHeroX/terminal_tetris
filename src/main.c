@@ -10,6 +10,9 @@ int main()
   View* game_view = (View*)malloc(sizeof(View));
   view_create(game_view);
 
+  float y = 0;
+
+
   struct timespec start, now;
   clock_gettime(CLOCK_REALTIME, &start);
   while(1)
@@ -22,7 +25,21 @@ int main()
     {
       view_clear(game_view);
 
-      refresh();
+      // DRAW GAME
+      place_block(game_view, 5, y);
+      y += 0.0002f;
+
+      wborder(game_view->game,
+              ACS_VLINE,
+              ACS_VLINE,
+              ACS_HLINE,
+              ACS_HLINE,
+              ACS_ULCORNER,
+              ACS_URCORNER,
+              ACS_LLCORNER,
+              ACS_LRCORNER);
+
+      wrefresh(game_view->game);
     }
   }
 
