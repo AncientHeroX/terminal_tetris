@@ -45,8 +45,10 @@ int view_create(View* view)
   getmaxyx(stdscr, view_height, view_width);
 
   int game_window_width = (BLOCK_WIDTH * 10) + 2;
+  int game_window_height
+    = (int)((view_height / BLOCK_HEIGHT) - 1) * BLOCK_HEIGHT + 2;
 
-  view->game = create_newwin(view_height,
+  view->game = create_newwin(game_window_height,
                              game_window_width,
                              0,
                              (view_width / 2) - (game_window_width / 2));
@@ -79,9 +81,9 @@ void view_refresh(View* view)
   getmaxyx(view->game, w_h, w_w);
   int dark = 0;
 
-  for(int y = 0; y < w_h; y++)
+  for(int y = 1; y < w_h - 1; y++)
   {
-    if(y % BLOCK_HEIGHT == 0)
+    if(y % BLOCK_HEIGHT == 1)
     {
       dark = !dark;
     }
