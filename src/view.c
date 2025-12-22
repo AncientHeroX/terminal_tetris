@@ -4,21 +4,30 @@
 // TODO (eduard):  Delete later
 #define DEBUG
 
-void place_block(const View* view,
-                 const float pos_x,
-                 const float pos_y,
-                 const char  c)
+void place_block(const View* view, const float pos_x, const float pos_y)
 {
   // horizontal movement normalization
   float new_pos_x = ((int)(pos_x / BLOCK_WIDTH) * BLOCK_WIDTH) + 1;
-
   for(int y = 0; y < BLOCK_HEIGHT; y++)
   {
-    for(int x = 0; x < BLOCK_WIDTH; x++)
+    if(y == 0)
+      mvwaddch(view->game, pos_y + y, new_pos_x, ACS_ULCORNER);
+    else if(y == BLOCK_HEIGHT - 1)
+      mvwaddch(view->game, pos_y + y, new_pos_x, ACS_LLCORNER);
+    else
+      mvwaddch(view->game, pos_y + y, new_pos_x, ACS_VLINE);
+    int x;
+    for(x = 1; x < BLOCK_WIDTH - 1; x++)
     {
-
-      mvwaddch(view->game, pos_y + y, new_pos_x + x, c);
+      mvwaddch(view->game, pos_y + y, new_pos_x + x, ACS_HLINE);
     }
+
+    if(y == 0)
+      mvwaddch(view->game, pos_y + y, new_pos_x + x, ACS_URCORNER);
+    else if(y == BLOCK_HEIGHT - 1)
+      mvwaddch(view->game, pos_y + y, new_pos_x + x, ACS_LRCORNER);
+    else
+      mvwaddch(view->game, pos_y + y, new_pos_x + x, ACS_VLINE);
   }
 }
 
@@ -49,8 +58,7 @@ int view_create(View* view)
   keypad(stdscr, TRUE);
   refresh();
 
-  int view_width, view_height;
-  getmaxyx(stdscr, view_height, view_width);
+  int view_width = getmaxx(stdscr);
 
   int game_window_width  = TETRIS_WIDTH * BLOCK_WIDTH + 2;
   int game_window_height = TETRIS_HEIGHT * BLOCK_HEIGHT + 2;
