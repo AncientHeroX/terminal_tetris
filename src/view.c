@@ -4,16 +4,20 @@
 // TODO (eduard):  Delete later
 #define DEBUG
 
-void place_block(const View* view, const float pos_x, const float pos_y)
+void place_block(const View* view,
+                 const float pos_x,
+                 const float pos_y,
+                 const char  c)
 {
-  for(int x = 0; x < BLOCK_WIDTH; x++)
-  {
-    for(int y = 0; y < BLOCK_HEIGHT; y++)
-    {
-      //horizontal movement normalization
-      float new_pos_x = ((int)(pos_x / BLOCK_WIDTH) * BLOCK_WIDTH) + 1;
+  // horizontal movement normalization
+  float new_pos_x = ((int)(pos_x / BLOCK_WIDTH) * BLOCK_WIDTH) + 1;
 
-      mvwaddch(view->game, pos_y + y, new_pos_x + x, 'x');
+  for(int y = 0; y < BLOCK_HEIGHT; y++)
+  {
+    for(int x = 0; x < BLOCK_WIDTH; x++)
+    {
+
+      mvwaddch(view->game, pos_y + y, new_pos_x + x, c);
     }
   }
 }
@@ -48,9 +52,8 @@ int view_create(View* view)
   int view_width, view_height;
   getmaxyx(stdscr, view_height, view_width);
 
-  int game_window_width = (BLOCK_WIDTH * 10) + 2;
-  int game_window_height
-    = (int)((view_height / BLOCK_HEIGHT) - 1) * BLOCK_HEIGHT + 2;
+  int game_window_width  = TETRIS_WIDTH * BLOCK_WIDTH + 2;
+  int game_window_height = TETRIS_HEIGHT * BLOCK_HEIGHT + 2;
 
   view->game = create_newwin(game_window_height,
                              game_window_width,
@@ -84,11 +87,11 @@ void view_refresh(View* view)
 
   wrefresh(view->game);
 }
-void view_clear(View* view) 
-{ 
-  werase(view->game); 
+void view_clear(View* view)
+{
+  werase(view->game);
 
-  #ifdef DEBUG
+#ifdef DEBUG
   int w_h, w_w;
   getmaxyx(view->game, w_h, w_w);
   int dark = 0;
@@ -115,6 +118,5 @@ void view_clear(View* view)
       }
     }
   }
-  #endif
+#endif
 }
-

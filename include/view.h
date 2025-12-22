@@ -3,6 +3,8 @@
 
 #define BLOCK_WIDTH 4
 #define BLOCK_HEIGHT 2
+#define TETRIS_HEIGHT 20
+#define TETRIS_WIDTH 10
 
 typedef struct
 {
@@ -17,6 +19,9 @@ void    destroy_win(WINDOW* local_win);
 int view_create(View* view);
 int view_destroy(View* view);
 
-void place_block(const View* view, const float pos_x, const float pos_y);
+void place_block(const View* view,
+                 const float pos_x,
+                 const float pos_y,
+                 const char  c);
 void view_refresh(View* view);
 void view_clear(View* view);
