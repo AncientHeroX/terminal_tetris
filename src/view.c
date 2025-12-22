@@ -41,7 +41,8 @@ int view_create(View* view)
   cbreak();
   noecho();
   curs_set(0);
-
+  nodelay(stdscr, TRUE);
+  keypad(stdscr, TRUE);
   refresh();
 
   int view_width, view_height;

@@ -12,6 +12,7 @@ int main()
 
   float y = 3;
   float x = 1;
+  int c;
 
 
   struct timespec start, now;
@@ -21,12 +22,18 @@ int main()
     clock_gettime(CLOCK_REALTIME, &now);
     long delta_time_ms = (now.tv_sec - start.tv_sec) * 1000
                          + (now.tv_nsec - start.tv_nsec) / 1000000;
-
+                      
     c = getch();
     switch(c)
     {
       case KEY_RIGHT:
-        x += 0.0001;
+      case 'd' :
+        x += BLOCK_WIDTH;
+        break;
+      
+      case KEY_LEFT:
+      case 'a':
+        x -= BLOCK_WIDTH;
         break;
     }
 
