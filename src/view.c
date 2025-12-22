@@ -10,7 +10,10 @@ void place_block(const View* view, const float pos_x, const float pos_y)
   {
     for(int y = 0; y < BLOCK_HEIGHT; y++)
     {
-      mvwaddch(view->game, pos_y + y, pos_x + x, ACS_CKBOARD);
+      //horizontal movement normalization
+      float new_pos_x = ((int)(pos_x / BLOCK_WIDTH) * BLOCK_WIDTH) + 1;
+
+      mvwaddch(view->game, pos_y + y, new_pos_x + x, 'x');
     }
   }
 }
@@ -76,7 +79,15 @@ int view_destroy(View* view)
 void view_refresh(View* view)
 {
 
-#ifdef DEBUG
+  redraw_border(view->game);
+
+  wrefresh(view->game);
+}
+void view_clear(View* view) 
+{ 
+  werase(view->game); 
+
+  #ifdef DEBUG
   int w_h, w_w;
   getmaxyx(view->game, w_h, w_w);
   int dark = 0;
@@ -95,7 +106,7 @@ void view_refresh(View* view)
       }
       if(dark)
       {
-        mvwaddch(view->game, y, x, 177);
+        mvwaddch(view->game, y, x, ' ');
       }
       else
       {
@@ -103,10 +114,6 @@ void view_refresh(View* view)
       }
     }
   }
-#endif
-
-  redraw_border(view->game);
-
-  wrefresh(view->game);
+  #endif
 }
-void view_clear(View* view) { werase(view->game); }
+

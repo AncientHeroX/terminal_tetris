@@ -10,7 +10,8 @@ int main()
   View* game_view = (View*)malloc(sizeof(View));
   view_create(game_view);
 
-  float y = 0;
+  float y = 3;
+  float x = 1;
 
 
   struct timespec start, now;
@@ -21,11 +22,20 @@ int main()
     long delta_time_ms = (now.tv_sec - start.tv_sec) * 1000
                          + (now.tv_nsec - start.tv_nsec) / 1000000;
 
+    c = getch();
+    switch(c)
+    {
+      case KEY_RIGHT:
+        x += 0.0001;
+        break;
+    }
+
     if(delta_time_ms > 1000 / TARGET_FPS)
     {
       view_clear(game_view);
 
       // DRAW GAME
+      place_block(game_view, x, y);
 
       view_refresh(game_view);
     }
