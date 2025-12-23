@@ -31,6 +31,43 @@ static void lock_piece(game_data* data)
     }
   }
 }
+static void check_line(game_data* data)
+{
+  size_t lines = 0;
+  for(int y = TETRIS_HEIGHT - 1; y >= 0; y--)
+  {
+    int count = 0;
+    for(int x = 0; x < TETRIS_WIDTH; x++)
+    {
+      if(data->lower_pool[x][y])
+        count++;
+    }
+    if(count == TETRIS_WIDTH)
+      lines++;
+  }
+
+  // Clear lines
+  for(int l = 0; l < lines; l++)
+  {
+    for(int x = 0; x < TETRIS_WIDTH; x++)
+    {
+      data->lower_pool[x][TETRIS_HEIGHT - l - 1] = 0;
+    }
+  }
+
+  if(lines > 0)
+  {
+    // Shift down
+    for(int y = TETRIS_HEIGHT - lines - 1; y >= 0; y--)
+    {
+      for(int x = 0; x < TETRIS_WIDTH; x++)
+      {
+        data->lower_pool[x][y + lines] = data->lower_pool[x][y];
+        data->lower_pool[x][y]         = 0;
+      }
+    }
+  }
+}
 
 static block_type block_types[]
   = { 17600, 17504, 19968, 50688, 27648, 34952, 52224 };
@@ -153,6 +190,7 @@ void update(game_data* data)
   {
     lock_piece(data);
     new_block(data);
+    check_line(data);
   }
   else
   {
