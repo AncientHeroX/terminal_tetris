@@ -11,6 +11,7 @@
 typedef struct
 {
   WINDOW* next_block;
+  WINDOW* score;
   WINDOW* game;
 } View;
 
@@ -25,6 +26,7 @@ void place_block(WINDOW* window, const float pos_x, const float pos_y);
 
 void render_block_type(WINDOW* window, block_type type, vector2 pos);
 void display_next(View* view, block_type type);
+void display_data(View* view, long level, long score);
 
 void view_refresh(View* view);
 void view_clear(View* view);

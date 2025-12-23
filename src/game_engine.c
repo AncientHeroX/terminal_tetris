@@ -8,10 +8,12 @@
 #include "game_engine.h"
 #include "view.h"
 
+static float calculate_fall_speed(long level) { return (1.0f / 10000) * level; }
 static vector2 vec2add(const vector2* restrict a, vector2* restrict b)
 {
   return (vector2){ a->x + b->x, a->y + b->y };
 }
+
 static void lock_piece(game_data* data)
 {
   int place = 1u << 15;
@@ -31,10 +33,35 @@ static void lock_piece(game_data* data)
     }
   }
 }
+static void update_level(game_data* data, long lines_cleared)
+{
+  if(lines_cleared <= 0)
+    return;
+
+  data->lines_cleared += lines_cleared;
+  if(data->lines_cleared > 10)
+  {
+    data->lines_cleared %= 10;
+    data->level++;
+  }
+
+  data->fall_speed = calculate_fall_speed(data->level);
+}
+
+static void update_score(game_data* data, long lines_cleared)
+{
+  static long line_scores[] = { 40, 100, 300, 1200 };
+
+  if(lines_cleared <= 0)
+    return;
+
+  data->score += line_scores[lines_cleared - 1] * data->level;
+}
+
 static void check_line(game_data* data)
 {
   int    lines[TETRIS_HEIGHT] = { 0 };
-  size_t lines_length         = 0;
+  size_t lines_cleared        = 0;
 
   for(int y = TETRIS_HEIGHT - 1; y >= 0; y--)
   {
@@ -45,11 +72,11 @@ static void check_line(game_data* data)
         count++;
     }
     if(count == TETRIS_WIDTH)
-      lines[lines_length++] = y;
+      lines[lines_cleared++] = y;
   }
 
   // Clear lines
-  for(int l = 0; l < lines_length; l++)
+  for(int l = 0; l < lines_cleared; l++)
   {
     for(int x = 0; x < TETRIS_WIDTH; x++)
     {
@@ -57,7 +84,7 @@ static void check_line(game_data* data)
     }
   }
 
-  if(lines_length > 0)
+  if(lines_cleared > 0)
   {
     // Shift
     int next_blank = 0;
@@ -79,15 +106,10 @@ static void check_line(game_data* data)
       }
       curr_line--;
     }
-
-    // Check level
-    data->lines_cleared += lines_length;
-    if(data->lines_cleared > 10)
-    {
-      data->lines_cleared %= 10;
-      data->level++;
-    }
   }
+
+  update_level(data, lines_cleared);
+  update_score(data, lines_cleared);
 }
 
 static block_type block_types[] = { J, L, T, Z, S, I, B };
@@ -241,6 +263,7 @@ void draw(View* view, game_data* data)
 {
   render_block(view, data);
   display_next(view, data->next_piece);
+  display_data(view, data->level, data->score);
 
   for(int y = 0; y < TETRIS_HEIGHT; y++)
   {
@@ -254,12 +277,12 @@ void draw(View* view, game_data* data)
   }
 }
 
-float calculate_fall_speed(long level) { return (1.0f / 10000) * level; }
 
 void init_game_state(game_data* data)
 {
   srand(time(NULL));
   data->level         = 1;
+  data->score         = 0;
   data->lines_cleared = 0;
   data->fall_speed    = calculate_fall_speed(data->level);
 

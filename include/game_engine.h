@@ -10,6 +10,7 @@ typedef struct
 
   int lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
 
+  long  score;
   long  level;
   long  lines_cleared;
   float fall_speed;

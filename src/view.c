@@ -1,8 +1,9 @@
 #include "view.h"
 #include <ncurses.h>
+#include <stdio.h>
 
 // TODO (eduard):  Delete later
-// #define DEBUG
+#define DEBUG
 
 void place_block(WINDOW* window, const float pos_x, const float pos_y)
 {
@@ -56,6 +57,13 @@ void display_next(View* view, block_type type)
                     type,
                     (vector2){ BLOCK_WIDTH * 2, BLOCK_HEIGHT * 1.5 });
 }
+void display_data(View* view, long level, long score)
+{
+  static char buff[64];
+  sprintf(buff, "Level: %ld\n Score: %ld", level, score);
+
+  mvwaddstr(view->score, 1, 1, buff);
+}
 
 WINDOW* create_newwin(int height, int width, int starty, int startx)
 {
@@ -101,6 +109,11 @@ int view_create(View* view)
                                    game_window_y,
                                    game_window_x + game_window_width + 2);
 
+  view->score = create_newwin((BLOCK_HEIGHT * 10) + 2,
+                              (BLOCK_WIDTH * 4) + 2,
+                              game_window_y,
+                              game_window_x - ((BLOCK_WIDTH * 4) + 4));
+
   return 0;
 }
 
@@ -128,12 +141,16 @@ void view_refresh(View* view)
 
   redraw_border(view->next_block);
   wrefresh(view->next_block);
+
+  redraw_border(view->score);
+  wrefresh(view->score);
 }
 
 void view_clear(View* view)
 {
-  werase(view->next_block);
   werase(view->game);
+  werase(view->next_block);
+  werase(view->score);
 
 #ifdef DEBUG
   int w_h, w_w;
