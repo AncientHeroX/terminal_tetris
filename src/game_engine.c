@@ -1,4 +1,3 @@
-#include <math.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,12 +132,14 @@ static int check_horizontal_collision(vector2 pos, game_data* data)
       if(data->falling_piece_type & place)
       {
         if(ystart + r >= TETRIS_HEIGHT || ystart + r < 0)
-          return 1;
-        if(xstart + c >= TETRIS_WIDTH || xstart + c < 0)
+          return 0;
+        if(xstart + c >= TETRIS_WIDTH)
+          return 2;
+        if(xstart + c < 0)
           return 1;
 
         if(data->lower_pool[xstart + c][ystart + r])
-          return 1;
+          return (xstart + c > pos.x) + 1;
       }
 
       place >>= 1;
@@ -173,6 +174,20 @@ void update(game_data* data)
     break;
   case 'c':
     data->falling_piece_type = rotate(data->falling_piece_type);
+    int col;
+
+    while((col = check_horizontal_collision(data->falling_piece, data)) != 0)
+    {
+      switch(col)
+      {
+      case 1:
+        data->falling_piece.x += BLOCK_WIDTH;
+        break;
+      case 2:
+        data->falling_piece.x -= BLOCK_WIDTH;
+        break;
+      }
+    }
     break;
   case ' ':
     change.y = 2;
@@ -222,8 +237,7 @@ void init_game_state(game_data* data)
   data->level      = 1;
   data->fall_speed = calculate_fall_speed(data->level);
 
-  data->falling_piece      = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
-  data->falling_piece_type = L;
+  new_block(data);
 
   for(int i = 0; i < TETRIS_WIDTH; i++)
   {
