@@ -174,8 +174,10 @@ static void new_block(game_data* data)
 {
   int r = rand() % 7;
 
-  data->falling_piece_type = block_types[r];
-  data->falling_piece      = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
+  data->falling_piece_type = data->next_piece;
+  data->next_piece         = block_types[r];
+
+  data->falling_piece = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
 }
 
 void update(game_data* data)
@@ -238,6 +240,7 @@ void update(game_data* data)
 void draw(View* view, game_data* data)
 {
   render_block(view, data);
+  display_next(view, data->next_piece);
 
   for(int y = 0; y < TETRIS_HEIGHT; y++)
   {
@@ -245,7 +248,7 @@ void draw(View* view, game_data* data)
     {
       if(data->lower_pool[x][y] == 1)
       {
-        place_block(view, x * BLOCK_WIDTH, 1 + (y * BLOCK_HEIGHT));
+        place_block(view->game, x * BLOCK_WIDTH, 1 + (y * BLOCK_HEIGHT));
       }
     }
   }
@@ -260,6 +263,7 @@ void init_game_state(game_data* data)
   data->lines_cleared = 0;
   data->fall_speed    = calculate_fall_speed(data->level);
 
+  data->next_piece = block_types[(int)(rand() % 7)];
   new_block(data);
 
   for(int i = 0; i < TETRIS_WIDTH; i++)
@@ -270,21 +274,5 @@ void init_game_state(game_data* data)
 
 void render_block(View* view, game_data* data)
 {
-
-  int sx = data->falling_piece.x - BLOCK_WIDTH;
-  int sy = data->falling_piece.y - BLOCK_HEIGHT;
-
-  int place = 1u << 15;
-
-  for(int r = 0; r < 4; r++)
-  {
-    for(int c = 0; c < 4; c++)
-    {
-      if(data->falling_piece_type & place)
-      {
-        place_block(view, sx + c * BLOCK_WIDTH, sy + r * BLOCK_HEIGHT);
-      }
-      place >>= 1;
-    }
-  }
+  render_block_type(view->game, data->falling_piece_type, data->falling_piece);
 }

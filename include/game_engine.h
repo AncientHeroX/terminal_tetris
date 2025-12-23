@@ -1,36 +1,12 @@
 #pragma once
+#include "defs.h"
 #include "view.h"
-
-
-typedef enum
-{
-  J = 17600,
-  L = 17504,
-  T = 19968,
-  Z = 50688,
-  S = 27648,
-  I = 34952,
-  B = 52224
-} block_type;
-
-typedef enum
-{
-  UP,
-  DOWN,
-  LEFT,
-  RIGHT
-} rotation;
-
-typedef struct
-{
-  float x, y;
-} vector2;
-
 
 typedef struct
 {
   vector2    falling_piece;
   block_type falling_piece_type;
+  block_type next_piece;
 
   int lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
 
