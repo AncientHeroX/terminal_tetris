@@ -34,6 +34,9 @@ int main()
     }
   }
 
+  free(game_view);
+  free(data);
+
   view_destroy(game_view);
   return 0;
 }

@@ -7,6 +7,31 @@
 
 #include "game_engine.h"
 #include "view.h"
+
+static vector2 vec2add(const vector2* restrict a, vector2* restrict b)
+{
+  return (vector2){ a->x + b->x, a->y + b->y };
+}
+static void lock_piece(game_data* data)
+{
+  int place = 1u << 15;
+
+  int sx = (data->falling_piece.x - BLOCK_WIDTH) / BLOCK_WIDTH;
+  int sy = (data->falling_piece.y - BLOCK_HEIGHT) / BLOCK_HEIGHT;
+
+  for(int r = 0; r < 4; r++)
+  {
+    for(int c = 0; c < 4; c++)
+    {
+      if(data->falling_piece_type & place)
+      {
+        data->lower_pool[sx + c][sy + r] = 1;
+      }
+      place >>= 1;
+    }
+  }
+}
+
 static block_type block_types[]
   = { 17600, 17504, 19968, 50688, 27648, 34952, 52224 };
 
@@ -29,7 +54,63 @@ uint16_t rotate(uint16_t x)
   return nr0 | (nr1 << 4) | (nr2 << 8) | (nr3 << 12);
 }
 
-void new_block(game_data* data)
+
+static int check_lower_collision(vector2 pos, game_data* data)
+{
+  int   place  = 1u << 15;
+  float ystart = (pos.y - BLOCK_HEIGHT);
+  float xstart = (pos.x - BLOCK_WIDTH);
+  float x, y;
+
+  for(int r = 0; r < 4; r++)
+  {
+    for(int c = 0; c < 4; c++)
+    {
+      if(data->falling_piece_type & place)
+      {
+        y = (ystart + r * BLOCK_HEIGHT);
+        x = (xstart + c * BLOCK_WIDTH);
+
+        if(y >= TETRIS_HEIGHT * BLOCK_HEIGHT)
+          return 1;
+
+        if(data->lower_pool[(int)(x / BLOCK_WIDTH)][(int)(y / BLOCK_HEIGHT)])
+          return 1;
+      }
+
+      place >>= 1;
+    }
+  }
+  return 0;
+}
+static int check_horizontal_collision(vector2 pos, game_data* data)
+{
+  int place  = 1u << 15;
+  int ystart = (pos.y - BLOCK_HEIGHT) / BLOCK_HEIGHT;
+  int xstart = (pos.x - BLOCK_WIDTH) / BLOCK_WIDTH;
+
+  for(int r = 0; r < 4; r++)
+  {
+    for(int c = 0; c < 4; c++)
+    {
+      if(data->falling_piece_type & place)
+      {
+        if(ystart + r >= TETRIS_HEIGHT || ystart + r < 0)
+          return 1;
+        if(xstart + c >= TETRIS_WIDTH || xstart + c < 0)
+          return 1;
+
+        if(data->lower_pool[xstart + c][ystart + r])
+          return 1;
+      }
+
+      place >>= 1;
+    }
+  }
+  return 0;
+}
+
+static void new_block(game_data* data)
 {
   int r = rand() % 7;
 
@@ -40,71 +121,43 @@ void new_block(game_data* data)
 void update(game_data* data)
 {
   int c = getch();
+
+  vector2 change = { 0 };
   switch(c)
   {
   case KEY_RIGHT:
   case 'd':
-    data->falling_piece.x = fminf(data->falling_piece.x + BLOCK_WIDTH,
-                                  (TETRIS_WIDTH - 1) * BLOCK_WIDTH);
+    change.x = BLOCK_WIDTH;
     break;
 
   case KEY_LEFT:
   case 'a':
-    data->falling_piece.x = fmaxf(data->falling_piece.x - BLOCK_WIDTH, 1);
+    change.x = -BLOCK_WIDTH;
     break;
   case 'c':
     data->falling_piece_type = rotate(data->falling_piece_type);
     break;
   case ' ':
-    data->falling_piece.y += 1;
+    change.y = 2;
     break;
   }
 
-  data->falling_piece.y += data->fall_speed;
+  change.y += data->fall_speed;
 
-  float sx = data->falling_piece.x - BLOCK_WIDTH;
-  float sy = data->falling_piece.y - BLOCK_HEIGHT;
-
-  size_t ptr   = 0;
-  int    place = 1u << 15;
-  int    save  = 0;
-
-  for(int r = 0; r < 4; r++)
+  if(check_horizontal_collision(vec2add(&data->falling_piece, &change), data))
   {
-    for(int c = 0; c < 4; c++)
-    {
-      if(data->falling_piece_type & place)
-      {
-        data->falling_piece_blocks[ptr++] = (vector2){ c, r };
-
-        if(sx + (c * BLOCK_WIDTH) < 0)
-          data->falling_piece.x = (int)(data->falling_piece.x + 1);
-        if(sx + (c * BLOCK_WIDTH) > (TETRIS_WIDTH - 1) * BLOCK_WIDTH)
-          data->falling_piece.x = (int)(data->falling_piece.x - 1);
-        if(sy + (r * BLOCK_HEIGHT) > TETRIS_HEIGHT * BLOCK_HEIGHT)
-          save = 1;
-      }
-
-      place >>= 1;
-    }
+    change.x = 0;
   }
-  sx = data->falling_piece.x - BLOCK_WIDTH;
 
-  for(int b = 0; b < 4; b++)
+  if(check_lower_collision(vec2add(&data->falling_piece, &change), data))
   {
-    vector2* cb = &data->falling_piece_blocks[b];
-
-    int px = sx + (cb->x * BLOCK_WIDTH);
-    int py = sy + (cb->y * BLOCK_HEIGHT);
-
-    if(save)
-    {
-      data->lower_pool[(int)(px / BLOCK_WIDTH)][(int)(py / BLOCK_HEIGHT) - 1]
-        = 1;
-    }
-  }
-  if(save)
+    lock_piece(data);
     new_block(data);
+  }
+  else
+  {
+    data->falling_piece = vec2add(&data->falling_piece, &change);
+  }
 }
 
 void draw(View* view, game_data* data)
@@ -146,10 +199,17 @@ void render_block(View* view, game_data* data)
   int sx = data->falling_piece.x - BLOCK_WIDTH;
   int sy = data->falling_piece.y - BLOCK_HEIGHT;
 
-  for(int b = 0; b < 4; b++)
+  int place = 1u << 15;
+
+  for(int r = 0; r < 4; r++)
   {
-    place_block(view,
-                sx + data->falling_piece_blocks[b].x * BLOCK_WIDTH,
-                sy + data->falling_piece_blocks[b].y * BLOCK_HEIGHT);
+    for(int c = 0; c < 4; c++)
+    {
+      if(data->falling_piece_type & place)
+      {
+        place_block(view, sx + c * BLOCK_WIDTH, sy + r * BLOCK_HEIGHT);
+      }
+      place >>= 1;
+    }
   }
 }

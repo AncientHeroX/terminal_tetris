@@ -30,7 +30,6 @@ typedef struct
 typedef struct
 {
   vector2    falling_piece;
-  vector2    falling_piece_blocks[4];
   block_type falling_piece_type;
 
   int lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
@@ -43,5 +42,4 @@ void update(game_data* data);
 void draw(View* view, game_data* data);
 void init_game_state(game_data* data);
 
-void new_block(game_data* data);
 void render_block(View* view, game_data* data);
