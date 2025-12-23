@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +33,9 @@ static void lock_piece(game_data* data)
 }
 static void check_line(game_data* data)
 {
-  size_t lines = 0;
+  int    lines[TETRIS_HEIGHT] = { 0 };
+  size_t lines_length         = 0;
+
   for(int y = TETRIS_HEIGHT - 1; y >= 0; y--)
   {
     int count = 0;
@@ -42,34 +45,52 @@ static void check_line(game_data* data)
         count++;
     }
     if(count == TETRIS_WIDTH)
-      lines++;
+      lines[lines_length++] = y;
   }
 
   // Clear lines
-  for(int l = 0; l < lines; l++)
+  for(int l = 0; l < lines_length; l++)
   {
     for(int x = 0; x < TETRIS_WIDTH; x++)
     {
-      data->lower_pool[x][TETRIS_HEIGHT - l - 1] = 0;
+      data->lower_pool[x][lines[l]] = 0;
     }
   }
 
-  if(lines > 0)
+  if(lines_length > 0)
   {
-    // Shift down
-    for(int y = TETRIS_HEIGHT - lines - 1; y >= 0; y--)
+    // Shift
+    int next_blank = 0;
+    int curr_line  = lines[next_blank++];
+
+    for(int y = curr_line - 1; y >= 0; y--)
     {
+      if(y == lines[next_blank])
+      {
+        next_blank++;
+        continue;
+      }
+      assert(curr_line > y);
+
       for(int x = 0; x < TETRIS_WIDTH; x++)
       {
-        data->lower_pool[x][y + lines] = data->lower_pool[x][y];
-        data->lower_pool[x][y]         = 0;
+        data->lower_pool[x][curr_line] = data->lower_pool[x][y];
+        data->lower_pool[x][y]         = data->lower_pool[x][y];
       }
+      curr_line--;
+    }
+
+    // Check level
+    data->lines_cleared += lines_length;
+    if(data->lines_cleared > 10)
+    {
+      data->lines_cleared %= 10;
+      data->level++;
     }
   }
 }
 
-static block_type block_types[]
-  = { 17600, 17504, 19968, 50688, 27648, 34952, 52224 };
+static block_type block_types[] = { J, L, T, Z, S, I, B };
 
 uint16_t rotate(uint16_t x)
 {
@@ -133,6 +154,7 @@ static int check_horizontal_collision(vector2 pos, game_data* data)
       {
         if(ystart + r >= TETRIS_HEIGHT || ystart + r < 0)
           return 0;
+
         if(xstart + c >= TETRIS_WIDTH)
           return 2;
         if(xstart + c < 0)
@@ -234,8 +256,9 @@ float calculate_fall_speed(long level) { return (1.0f / 10000) * level; }
 void init_game_state(game_data* data)
 {
   srand(time(NULL));
-  data->level      = 1;
-  data->fall_speed = calculate_fall_speed(data->level);
+  data->level         = 1;
+  data->lines_cleared = 0;
+  data->fall_speed    = calculate_fall_speed(data->level);
 
   new_block(data);
 

@@ -35,7 +35,10 @@ typedef struct
   int lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
 
   long  level;
+  long  lines_cleared;
   float fall_speed;
+
+  long points;
 } game_data;
 
 void update(game_data* data);
