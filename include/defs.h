@@ -12,6 +12,17 @@ typedef enum
 
 typedef enum
 {
+  J_COLOR = 1,
+  L_COLOR,
+  T_COLOR,
+  Z_COLOR,
+  S_COLOR,
+  I_COLOR,
+  B_COLOR
+} color_pairs;
+
+typedef enum
+{
   UP,
   DOWN,
   LEFT,

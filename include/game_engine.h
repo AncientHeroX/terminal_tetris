@@ -6,7 +6,10 @@ typedef struct
 {
   vector2    falling_piece;
   block_type falling_piece_type;
+  color_pairs pair;
+
   block_type next_piece;
+  color_pairs next_pair;
 
   int lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
 

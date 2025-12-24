@@ -24,8 +24,8 @@ int view_destroy(View* view);
 
 void place_block(WINDOW* window, const float pos_x, const float pos_y);
 
-void render_block_type(WINDOW* window, block_type type, vector2 pos);
-void display_next(View* view, block_type type);
+void render_block_type(WINDOW* window, block_type type, vector2 pos, color_pairs pair);
+void display_next(View* view, block_type type, color_pairs pair);
 void display_data(View* view, long level, long score);
 
 void view_refresh(View* view);

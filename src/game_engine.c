@@ -197,7 +197,11 @@ static void new_block(game_data* data)
   int r = rand() % 7;
 
   data->falling_piece_type = data->next_piece;
+  data->pair = get_type_color(data->falling_piece_type);
+
   data->next_piece         = block_types[r];
+  data->next_pair = get_type_color(data->next_piece);
+  
 
   data->falling_piece = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
 }
@@ -262,7 +266,7 @@ void update(game_data* data)
 void draw(View* view, game_data* data)
 {
   render_block(view, data);
-  display_next(view, data->next_piece);
+  display_next(view, data->next_piece, data->next_pair);
   display_data(view, data->level, data->score);
 
   for(int y = 0; y < TETRIS_HEIGHT; y++)
@@ -297,5 +301,5 @@ void init_game_state(game_data* data)
 
 void render_block(View* view, game_data* data)
 {
-  render_block_type(view->game, data->falling_piece_type, data->falling_piece);
+  render_block_type(view->game, data->falling_piece_type, data->falling_piece, data->pair);
 }
