@@ -28,6 +28,7 @@ static void lock_piece(game_data* data)
       if(data->falling_piece_type & place)
       {
         data->lower_pool[sx + c][sy + r] = 1;
+        data->color_pool[sx + c][sy + r] = data->pair;
       }
       place >>= 1;
     }
@@ -76,6 +77,7 @@ static void check_line(game_data* data)
   }
 
   // Clear lines
+  // todo (eduard): check if needed
   for(int l = 0; l < lines_cleared; l++)
   {
     for(int x = 0; x < TETRIS_WIDTH; x++)
@@ -103,6 +105,9 @@ static void check_line(game_data* data)
       {
         data->lower_pool[x][curr_line] = data->lower_pool[x][y];
         data->lower_pool[x][y]         = data->lower_pool[x][y];
+
+        data->color_pool[x][curr_line] = data->color_pool[x][y];
+        data->color_pool[x][y]         = data->color_pool[x][y];
       }
       curr_line--;
     }
@@ -197,11 +202,10 @@ static void new_block(game_data* data)
   int r = rand() % 7;
 
   data->falling_piece_type = data->next_piece;
-  data->pair = get_type_color(data->falling_piece_type);
+  data->pair               = get_type_color(data->falling_piece_type);
 
-  data->next_piece         = block_types[r];
-  data->next_pair = get_type_color(data->next_piece);
-  
+  data->next_piece = block_types[r];
+  data->next_pair  = get_type_color(data->next_piece);
 
   data->falling_piece = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
 }
@@ -275,7 +279,9 @@ void draw(View* view, game_data* data)
     {
       if(data->lower_pool[x][y] == 1)
       {
+        wattron(view->game, COLOR_PAIR(data->color_pool[x][y]));
         place_block(view->game, x * BLOCK_WIDTH, 1 + (y * BLOCK_HEIGHT));
+        wattroff(view->game, COLOR_PAIR(data->color_pool[x][y]));
       }
     }
   }
@@ -301,5 +307,8 @@ void init_game_state(game_data* data)
 
 void render_block(View* view, game_data* data)
 {
-  render_block_type(view->game, data->falling_piece_type, data->falling_piece, data->pair);
+  render_block_type(view->game,
+                    data->falling_piece_type,
+                    data->falling_piece,
+                    data->pair);
 }

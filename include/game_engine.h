@@ -4,14 +4,15 @@
 
 typedef struct
 {
-  vector2    falling_piece;
-  block_type falling_piece_type;
+  vector2     falling_piece;
+  block_type  falling_piece_type;
   color_pairs pair;
 
-  block_type next_piece;
+  block_type  next_piece;
   color_pairs next_pair;
 
-  int lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
+  int         lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
+  color_pairs color_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
 
   long  score;
   long  level;

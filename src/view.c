@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 // TODO (eduard):  Delete later
-#define DEBUG
+//  #define DEBUG
 
 void place_block(WINDOW* window, const float pos_x, const float pos_y)
 {
@@ -32,7 +32,10 @@ void place_block(WINDOW* window, const float pos_x, const float pos_y)
   }
 }
 
-void render_block_type(WINDOW* window, block_type type, vector2 pos, color_pairs pair)
+void render_block_type(WINDOW*     window,
+                       block_type  type,
+                       vector2     pos,
+                       color_pairs pair)
 {
   wattron(window, COLOR_PAIR(pair));
 
@@ -59,12 +62,13 @@ void display_next(View* view, block_type type, color_pairs pair)
 {
   render_block_type(view->next_block,
                     type,
-                    (vector2){ BLOCK_WIDTH * 2, BLOCK_HEIGHT * 1.5 }, pair);
+                    (vector2){ BLOCK_WIDTH * 2, BLOCK_HEIGHT * 1.5 },
+                    pair);
 }
 void display_data(View* view, long level, long score)
 {
   static char buff[64];
- 
+
   sprintf(buff, "Level: %ld\n Score: %ld", level, score);
   mvwaddstr(view->score, 1, 1, buff);
 }
@@ -88,13 +92,13 @@ void destroy_win(WINDOW* local_win)
 
 void create_colorpairs()
 {
-  init_pair(J_COLOR, COLOR_BLUE, COLOR_BLUE);
-  init_pair(L_COLOR, COLOR_RED, COLOR_RED);
-  init_pair(T_COLOR, COLOR_MAGENTA, COLOR_MAGENTA);
-  init_pair(Z_COLOR, COLOR_RED, COLOR_RED);
-  init_pair(S_COLOR, COLOR_GREEN, COLOR_GREEN);
-  init_pair(I_COLOR, COLOR_CYAN, COLOR_CYAN);
-  init_pair(B_COLOR, COLOR_YELLOW, COLOR_YELLOW);
+  init_pair(J_COLOR, COLOR_WHITE, COLOR_BLUE);
+  init_pair(L_COLOR, COLOR_WHITE, COLOR_RED);
+  init_pair(T_COLOR, COLOR_WHITE, COLOR_MAGENTA);
+  init_pair(Z_COLOR, COLOR_WHITE, COLOR_RED);
+  init_pair(S_COLOR, COLOR_WHITE, COLOR_GREEN);
+  init_pair(I_COLOR, COLOR_WHITE, COLOR_CYAN);
+  init_pair(B_COLOR, COLOR_WHITE, COLOR_YELLOW);
 }
 
 int view_create(View* view)
@@ -105,10 +109,10 @@ int view_create(View* view)
   curs_set(0);
   nodelay(stdscr, TRUE);
   keypad(stdscr, TRUE);
-  refresh();
-  
+
   start_color();
   create_colorpairs();
+  refresh();
 
 
   int view_width = getmaxx(stdscr);

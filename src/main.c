@@ -14,6 +14,8 @@ int main()
 
   game_data* data = (game_data*)malloc(sizeof(game_data));
   init_game_state(data);
+  system(
+    "$(while [ 1 ]; do paplay /home/eduardglez/Downloads/791018.mp3; done) &");
 
   struct timespec start, now;
   clock_gettime(CLOCK_REALTIME, &start);

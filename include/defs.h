@@ -33,3 +33,5 @@ typedef struct
 {
   float x, y;
 } vector2;
+
+color_pairs get_type_color(block_type type);
