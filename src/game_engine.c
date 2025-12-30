@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "game_engine.h"
+#include "sound.h"
 #include "view.h"
 
 static float calculate_fall_speed(long level) { return (1.0f / 10000) * level; }
@@ -59,7 +60,7 @@ static void update_score(game_data* data, long lines_cleared)
   data->score += line_scores[lines_cleared - 1] * data->level;
 }
 
-static void check_line(game_data* data)
+static int check_line(game_data* data)
 {
   int    lines[TETRIS_HEIGHT] = { 0 };
   size_t lines_cleared        = 0;
@@ -74,16 +75,6 @@ static void check_line(game_data* data)
     }
     if(count == TETRIS_WIDTH)
       lines[lines_cleared++] = y;
-  }
-
-  // Clear lines
-  // todo (eduard): check if needed
-  for(int l = 0; l < lines_cleared; l++)
-  {
-    for(int x = 0; x < TETRIS_WIDTH; x++)
-    {
-      data->lower_pool[x][lines[l]] = 0;
-    }
   }
 
   if(lines_cleared > 0)
@@ -115,6 +106,8 @@ static void check_line(game_data* data)
 
   update_level(data, lines_cleared);
   update_score(data, lines_cleared);
+
+  return lines_cleared > 0;
 }
 
 static block_type block_types[] = { J, L, T, Z, S, I, B };
@@ -210,7 +203,7 @@ static void new_block(game_data* data)
   data->falling_piece = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
 }
 
-void update(game_data* data)
+void update(game_data* data, sound_ctl* game_sound)
 {
   int c = getch();
 
@@ -257,9 +250,14 @@ void update(game_data* data)
 
   if(check_lower_collision(vec2add(&data->falling_piece, &change), data))
   {
+    play_place_sound(game_sound);
     lock_piece(data);
     new_block(data);
-    check_line(data);
+
+    if(check_line(data))
+    {
+      play_clear_sound(game_sound);
+    }
   }
   else
   {

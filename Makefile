@@ -7,7 +7,7 @@ BIN_DIR=./bin/debug
 BUILD_DIR=./build/debug
 SRC_DIR=./src
 
-LIBS=-lm -lncurses
+LIBS=-lm -lncurses -lpthread
 CFLAGS=-I$(INCLUDE_DIR) -g -Wall
 LDFLAGS= -fsanitize=address
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))

@@ -1,5 +1,6 @@
 #pragma once
 #include "defs.h"
+#include "sound.h"
 #include "view.h"
 
 typedef struct
@@ -22,7 +23,7 @@ typedef struct
   long points;
 } game_data;
 
-void update(game_data* data);
+void update(game_data* data, sound_ctl* game_sound);
 void draw(View* view, game_data* data);
 void init_game_state(game_data* data);
 
