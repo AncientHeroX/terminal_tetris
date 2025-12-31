@@ -85,16 +85,23 @@ static int decode_file(sound_ctl* engine, const char* filename)
   return 0;
 }
 
-void start_main_theme(sound_ctl* sctl)
+static void start_main_theme(sound_ctl* sctl)
 {
   decode_file(sctl, "resources/791018.wav");
 }
-
-void play_place_sound(sound_ctl* sctl)
+void play_sound(sound_ctl* sctl, SOUND_TYPE type)
 {
-  ma_engine_play_sound(&sctl->engine, "resources/blipSelect.wav", NULL);
-}
-void play_clear_sound(sound_ctl* sctl)
-{
-  ma_engine_play_sound(&sctl->engine, "resources/powerUp.wav", NULL);
+  switch(type)
+  {
+  case SOUND_MAIN_THEME:
+    start_main_theme(sctl);
+    return;
+    break;
+  case SOUND_LINE_CLEAR:
+    ma_engine_play_sound(&sctl->engine, "resources/powerUp.wav", NULL);
+    break;
+  case SOUND_PLACE_BLOCK:
+    ma_engine_play_sound(&sctl->engine, "resources/blipSelect.wav", NULL);
+    break;
+  }
 }

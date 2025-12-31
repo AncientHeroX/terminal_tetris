@@ -22,7 +22,7 @@ int main()
   sound_ctl* game_sound = (sound_ctl*)malloc(sizeof(sound_ctl));
   init_sound(game_sound);
 
-  start_main_theme(game_sound);
+  play_sound(game_sound, SOUND_MAIN_THEME);
 
   struct timespec start, now;
   clock_gettime(CLOCK_REALTIME, &start);

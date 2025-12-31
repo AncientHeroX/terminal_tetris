@@ -250,13 +250,13 @@ void update(game_data* data, sound_ctl* game_sound)
 
   if(check_lower_collision(vec2add(&data->falling_piece, &change), data))
   {
-    play_place_sound(game_sound);
+    play_sound(game_sound, SOUND_PLACE_BLOCK);
     lock_piece(data);
     new_block(data);
 
     if(check_line(data))
     {
-      play_clear_sound(game_sound);
+      play_sound(game_sound, SOUND_LINE_CLEAR);
     }
   }
   else

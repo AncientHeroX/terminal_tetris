@@ -8,9 +8,14 @@ typedef struct
   ma_device  device;
 } sound_ctl;
 
+typedef enum
+{
+  SOUND_MAIN_THEME,
+  SOUND_LINE_CLEAR,
+  SOUND_PLACE_BLOCK
+} SOUND_TYPE;
+
 int  init_sound(sound_ctl* engine);
 void destroy_sound(sound_ctl** sctl);
 
-void start_main_theme(sound_ctl* engine);
-void play_place_sound(sound_ctl* sctl);
-void play_clear_sound(sound_ctl* sctl);
+void play_sound(sound_ctl* sctl, SOUND_TYPE type);
