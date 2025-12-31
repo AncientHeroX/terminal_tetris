@@ -25,6 +25,9 @@ int main()
   play_sound(game_sound, SOUND_MAIN_THEME);
 
   struct timespec start, now;
+  long            elapsed    = 0;
+  const long      frame_time = 1000 / TARGET_FPS;
+
   clock_gettime(CLOCK_REALTIME, &start);
   while(1)
   {
@@ -32,16 +35,22 @@ int main()
     long delta_time_ms = (now.tv_sec - start.tv_sec) * 1000
                          + (now.tv_nsec - start.tv_nsec) / 1000000;
 
-    update(data, game_sound);
+    elapsed += delta_time_ms;
+    start = now;
 
-    if(delta_time_ms > 1000 / TARGET_FPS)
+
+    if(elapsed >= frame_time)
     {
-      view_clear(game_view);
-
-      draw(game_view, data);
-
-      view_refresh(game_view);
+      update(data, game_sound, delta_time_ms);
+      elapsed -= frame_time;
     }
+    view_clear(game_view);
+
+    draw(game_view, data);
+
+    view_refresh(game_view);
+
+    usleep(5000);
   }
 
   free(game_view);

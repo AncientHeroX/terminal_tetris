@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +10,11 @@
 #include "sound.h"
 #include "view.h"
 
-static float calculate_fall_speed(long level) { return (1.0f / 10000) * level; }
+static float calculate_fall_speed(long level)
+{
+  return 0.12f * exp((0.2f) * level);
+}
+
 static vector2 vec2add(const vector2* restrict a, vector2* restrict b)
 {
   return (vector2){ a->x + b->x, a->y + b->y };
@@ -26,6 +31,7 @@ static void lock_piece(game_data* data)
   {
     for(int c = 0; c < 4; c++)
     {
+
       if(data->falling_piece_type & place)
       {
         data->lower_pool[sx + c][sy + r] = 1;
@@ -203,7 +209,8 @@ static void new_block(game_data* data)
   data->falling_piece = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
 }
 
-static void running_update(game_data* data, sound_ctl* game_sound)
+static void
+running_update(game_data* data, sound_ctl* game_sound, long delta_time_ms)
 {
   int c = getch();
 
@@ -253,7 +260,7 @@ static void running_update(game_data* data, sound_ctl* game_sound)
     break;
   }
 
-  change.y += data->fall_speed;
+  change.y += data->fall_speed / delta_time_ms;
 
   if(check_horizontal_collision(vec2add(&data->falling_piece, &change), data))
   {
@@ -268,6 +275,14 @@ static void running_update(game_data* data, sound_ctl* game_sound)
       play_sound(game_sound, SOUND_GAME_OVER);
       return;
     }
+
+    change.y -= data->fall_speed;
+    while((check_lower_collision(vec2add(&data->falling_piece, &change), data))
+          != 0)
+    {
+      change.y -= data->fall_speed;
+    }
+    data->falling_piece.y += change.y;
 
     play_sound(game_sound, SOUND_PLACE_BLOCK);
     lock_piece(data);
@@ -284,12 +299,12 @@ static void running_update(game_data* data, sound_ctl* game_sound)
   }
 }
 
-void update(game_data* data, sound_ctl* game_sound)
+void update(game_data* data, sound_ctl* game_sound, long delta_time_ms)
 {
   switch(data->state)
   {
   case T_GS_RUNNING:
-    running_update(data, game_sound);
+    running_update(data, game_sound, delta_time_ms);
     break;
   default:
     return;

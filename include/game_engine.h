@@ -31,7 +31,7 @@ typedef struct
   long points;
 } game_data;
 
-void update(game_data* data, sound_ctl* game_sound);
+void update(game_data* data, sound_ctl* game_sound, long delta_time_ms);
 void draw(View* view, game_data* data);
 void init_game_state(game_data* data);
 
