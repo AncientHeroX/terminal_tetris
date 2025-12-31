@@ -206,12 +206,12 @@ void view_clear(View* view)
 #endif
 }
 
-static const char* game_over_str[] = { "  ____    _    __  __ _____\n\
+static const char* game_over_str[] = { " ____    _    __  __ _____\n\
  / ___|  / \\  |  \\/  | ____|\n\
 | |  _  / _ \\ | |\\/| |  _|\n\
 | |_| |/ ___ \\| |  | | |__\n\
  \\____/_/   \\_\\_|  |_|_____|\n\0",
-                                       "  _____     _______ ____\n\
+                                       " _____     _______ ____\n\
  / _ \\ \\   / / ____|  _ \\\n\
 | | | \\ \\ / /|  _| | |_) |\n\
 | |_| |\\ V / | |___|  _ <\n\
@@ -221,29 +221,46 @@ static int render_string(WINDOW* w, int x, int y, const char* str)
 {
   size_t ptr = 0;
   char   c;
-  int    s = 0;
-  int    l = 0;
 
-  wmove(w, y, x);
-  char buff[32];
+  int maxx = getmaxx(w);
 
-  while((c = str[ptr++]) != '\0')
+  wmove(w, y, 0);
+  int py = y, px = 0;
+
+  for(px = 0; px <= maxx; px++)
   {
+    if(px < x)
+    {
+      waddch(w, ' ');
+      continue;
+    }
+
+    c = str[ptr++];
     if(c == '\n')
     {
-      wmove(w, y + l, x);
-      strncpy(buff, str + s, ((ptr - s) < 32 ? (ptr - s) : 31));
-
-      buff[((ptr - s) < 32 ? (ptr - s) : 31)] = '\0';
-      waddstr(w, buff);
-
-      s = ptr;
-      l++;
+      for(int j = x + 1; j <= maxx; j++)
+      {
+        waddch(w, ' ');
+      }
+      wmove(w, ++py, 0);
+      px = 0;
+      continue;
+    }
+    else if(c == '\0')
+    {
+      for(int j = x + 1; j <= maxx; j++)
+      {
+        waddch(w, ' ');
+      }
+      break;
+    }
+    else
+    {
+      waddch(w, c);
     }
   }
-  return y + l;
+  return py;
 }
-
 
 void render_game_over(View* view)
 {
