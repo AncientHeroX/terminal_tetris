@@ -112,7 +112,7 @@ static int check_line(game_data* data)
 
 static block_type block_types[] = { J, L, T, Z, S, I, B };
 
-uint16_t rotate(uint16_t x)
+uint16_t rotate(const uint16_t x)
 {
   uint16_t r0 = x & 0xF;
   uint16_t r1 = (x >> 4) & 0xF;
@@ -208,6 +208,7 @@ static void running_update(game_data* data, sound_ctl* game_sound)
   int c = getch();
 
   vector2 change = { 0 };
+
   switch(c)
   {
   case KEY_RIGHT:
@@ -220,22 +221,33 @@ static void running_update(game_data* data, sound_ctl* game_sound)
     change.x = -BLOCK_WIDTH;
     break;
   case 'c':
+  {
+    const uint16_t old       = data->falling_piece_type;
     data->falling_piece_type = rotate(data->falling_piece_type);
     int col;
+    int tries = 0;
 
-    while((col = check_horizontal_collision(data->falling_piece, data)) != 0)
+    while((col = check_horizontal_collision(data->falling_piece, data)) != 0
+          && tries++ < 10)
     {
       switch(col)
       {
       case 1:
-        data->falling_piece.x += BLOCK_WIDTH;
+        change.x += BLOCK_WIDTH;
         break;
       case 2:
-        data->falling_piece.x -= BLOCK_WIDTH;
+        change.x -= BLOCK_WIDTH;
         break;
       }
     }
-    break;
+
+    if(tries >= 10)
+    {
+      data->falling_piece_type = old;
+      change.x                 = 0;
+    }
+  }
+  break;
   case ' ':
     change.y = 2;
     break;
