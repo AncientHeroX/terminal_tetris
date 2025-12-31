@@ -7,7 +7,7 @@ BIN_DIR=./bin/debug
 BUILD_DIR=./build/debug
 SRC_DIR=./src
 
-LIBS=-lm -lncurses -lpthread
+LIBS=-lm -lncurses
 CFLAGS=-I$(INCLUDE_DIR) -g -Wall
 LDFLAGS= -fsanitize=address
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
@@ -28,11 +28,10 @@ R_BIN_DIR=./bin/release
 R_SRCS = $(shell find $(SRC_DIR) -name '*.c')
 R_OBJS := $(patsubst $(SRC_DIR)/%.c,$(R_BUILD_DIR)/%.c.o,$(SRCS))
 R_CFLAGS=-I$(INCLUDE_DIR) -O2 
-R_LDFLAGS=-Wl,-s
 
 $(R_BIN_DIR)/$(APPNAME): $(R_OBJS)
 	mkdir -p $(R_BIN_DIR)
-	$(CC) -o $@ $< $(R_LDFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(R_LDFLAGS) $(LIBS)
 
 $(R_BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
 	mkdir -p $(R_BUILD_DIR)

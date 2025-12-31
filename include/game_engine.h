@@ -3,8 +3,16 @@
 #include "sound.h"
 #include "view.h"
 
+typedef enum
+{
+  T_GS_RUNNING,
+  T_GS_GAMEOVER,
+} game_states;
+
 typedef struct
 {
+  game_states state;
+
   vector2     falling_piece;
   block_type  falling_piece_type;
   color_pairs pair;

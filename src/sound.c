@@ -1,4 +1,5 @@
 #include "sound.h"
+#include "miniaudio.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -103,5 +104,8 @@ void play_sound(sound_ctl* sctl, SOUND_TYPE type)
   case SOUND_PLACE_BLOCK:
     ma_engine_play_sound(&sctl->engine, "resources/blipSelect.wav", NULL);
     break;
+  case SOUND_GAME_OVER:
+    ma_device_stop(&sctl->device);
+    ma_engine_play_sound(&sctl->engine, "resources/game-over.wav", NULL);
   }
 }

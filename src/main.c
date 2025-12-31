@@ -37,6 +37,7 @@ int main()
     if(delta_time_ms > 1000 / TARGET_FPS)
     {
       view_clear(game_view);
+
       draw(game_view, data);
 
       view_refresh(game_view);

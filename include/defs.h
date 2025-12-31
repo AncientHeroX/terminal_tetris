@@ -18,7 +18,7 @@ typedef enum
   Z_COLOR,
   S_COLOR,
   I_COLOR,
-  B_COLOR
+  B_COLOR,
 } color_pairs;
 
 typedef enum

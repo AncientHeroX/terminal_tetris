@@ -1,6 +1,7 @@
 #include "view.h"
 #include <ncurses.h>
 #include <stdio.h>
+#include <string.h>
 
 // TODO (eduard):  Delete later
 //  #define DEBUG
@@ -203,4 +204,49 @@ void view_clear(View* view)
     }
   }
 #endif
+}
+
+static const char* game_over_str[] = { "  ____    _    __  __ _____\n\
+ / ___|  / \\  |  \\/  | ____|\n\
+| |  _  / _ \\ | |\\/| |  _|\n\
+| |_| |/ ___ \\| |  | | |__\n\
+ \\____/_/   \\_\\_|  |_|_____|\n\0",
+                                       "  _____     _______ ____\n\
+ / _ \\ \\   / / ____|  _ \\\n\
+| | | \\ \\ / /|  _| | |_) |\n\
+| |_| |\\ V / | |___|  _ <\n\
+ \\___/  \\_/  |_____|_| \\_\\\n\0" };
+
+static int render_string(WINDOW* w, int x, int y, const char* str)
+{
+  size_t ptr = 0;
+  char   c;
+  int    s = 0;
+  int    l = 0;
+
+  wmove(w, y, x);
+  char buff[32];
+
+  while((c = str[ptr++]) != '\0')
+  {
+    if(c == '\n')
+    {
+      wmove(w, y + l, x);
+      strncpy(buff, str + s, ((ptr - s) < 32 ? (ptr - s) : 31));
+
+      buff[((ptr - s) < 32 ? (ptr - s) : 31)] = '\0';
+      waddstr(w, buff);
+
+      s = ptr;
+      l++;
+    }
+  }
+  return y + l;
+}
+
+
+void render_game_over(View* view)
+{
+  const int next_line = render_string(view->game, 7, 15, game_over_str[0]);
+  render_string(view->game, 7, next_line, game_over_str[1]);
 }

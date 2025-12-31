@@ -12,7 +12,8 @@ typedef enum
 {
   SOUND_MAIN_THEME,
   SOUND_LINE_CLEAR,
-  SOUND_PLACE_BLOCK
+  SOUND_PLACE_BLOCK,
+  SOUND_GAME_OVER
 } SOUND_TYPE;
 
 int  init_sound(sound_ctl* engine);

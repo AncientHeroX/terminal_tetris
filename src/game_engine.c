@@ -203,7 +203,7 @@ static void new_block(game_data* data)
   data->falling_piece = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
 }
 
-void update(game_data* data, sound_ctl* game_sound)
+static void running_update(game_data* data, sound_ctl* game_sound)
 {
   int c = getch();
 
@@ -250,6 +250,13 @@ void update(game_data* data, sound_ctl* game_sound)
 
   if(check_lower_collision(vec2add(&data->falling_piece, &change), data))
   {
+    if(data->falling_piece.y <= 0)
+    {
+      data->state = T_GS_GAMEOVER;
+      play_sound(game_sound, SOUND_GAME_OVER);
+      return;
+    }
+
     play_sound(game_sound, SOUND_PLACE_BLOCK);
     lock_piece(data);
     new_block(data);
@@ -265,7 +272,18 @@ void update(game_data* data, sound_ctl* game_sound)
   }
 }
 
-void draw(View* view, game_data* data)
+void update(game_data* data, sound_ctl* game_sound)
+{
+  switch(data->state)
+  {
+  case T_GS_RUNNING:
+    running_update(data, game_sound);
+    break;
+  default:
+    return;
+  }
+}
+static void running_draw(View* view, game_data* data)
 {
   render_block(view, data);
   display_next(view, data->next_piece, data->next_pair);
@@ -285,6 +303,20 @@ void draw(View* view, game_data* data)
   }
 }
 
+void draw(View* view, game_data* data)
+{
+  switch(data->state)
+  {
+  case T_GS_RUNNING:
+    running_draw(view, data);
+    break;
+  case T_GS_GAMEOVER:
+    running_draw(view, data);
+    render_game_over(view);
+    break;
+  }
+}
+
 
 void init_game_state(game_data* data)
 {
@@ -293,6 +325,7 @@ void init_game_state(game_data* data)
   data->score         = 0;
   data->lines_cleared = 0;
   data->fall_speed    = calculate_fall_speed(data->level);
+  data->state         = T_GS_RUNNING;
 
   data->next_piece = block_types[(int)(rand() % 7)];
   new_block(data);
