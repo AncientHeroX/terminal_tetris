@@ -10,6 +10,7 @@
 #include "miniaudio.h"
 
 #define TARGET_FPS 60.0f
+static const long frame_time_us = 1000000 / TARGET_FPS;
 
 int main()
 {
@@ -25,32 +26,28 @@ int main()
   play_sound(game_sound, SOUND_MAIN_THEME);
 
   struct timespec start, now;
-  long            elapsed    = 0;
-  const long      frame_time = 1000 / TARGET_FPS;
 
   clock_gettime(CLOCK_REALTIME, &start);
   while(1)
   {
     clock_gettime(CLOCK_REALTIME, &now);
-    long delta_time_ms = (now.tv_sec - start.tv_sec) * 1000
-                         + (now.tv_nsec - start.tv_nsec) / 1000000;
+    long delta_time_us = (now.tv_sec - start.tv_sec) * 1000000LL
+                         + (now.tv_nsec - start.tv_nsec) / 1000LL;
 
-    elapsed += delta_time_ms;
-    start = now;
+    update(data, game_sound, delta_time_us);
 
-
-    if(elapsed >= frame_time)
-    {
-      update(data, game_sound, delta_time_ms);
-      elapsed -= frame_time;
-    }
     view_clear(game_view);
 
     draw(game_view, data);
 
     view_refresh(game_view);
+    start = now;
 
-    usleep(5000);
+    long sleep_time = delta_time_us - frame_time_us;
+    if(sleep_time > 0)
+    {
+      usleep(sleep_time);
+    }
   }
 
   free(game_view);

@@ -10,9 +10,11 @@
 #include "sound.h"
 #include "view.h"
 
+#define MAX_LEVEL 15
+
 static float calculate_fall_speed(long level)
 {
-  return 0.12f * exp((0.2f) * level);
+  return 1e-6f * exp((0.2f) * level);
 }
 
 static vector2 vec2add(const vector2* restrict a, vector2* restrict b)
@@ -50,7 +52,7 @@ static void update_level(game_data* data, long lines_cleared)
   if(data->lines_cleared > 10)
   {
     data->lines_cleared %= 10;
-    data->level++;
+    data->level = data->level + 1 > MAX_LEVEL ? MAX_LEVEL : data->level;
   }
 
   data->fall_speed = calculate_fall_speed(data->level);
@@ -206,11 +208,11 @@ static void new_block(game_data* data)
   data->next_piece = block_types[r];
   data->next_pair  = get_type_color(data->next_piece);
 
-  data->falling_piece = (vector2){ .x = BLOCK_WIDTH * 4, .y = 0 };
+  data->falling_piece = (vector2){ .x = BLOCK_WIDTH * 4, .y = 3 };
 }
 
 static void
-running_update(game_data* data, sound_ctl* game_sound, long delta_time_ms)
+running_update(game_data* data, sound_ctl* game_sound, long delta_time_us)
 {
   int c = getch();
 
@@ -260,7 +262,7 @@ running_update(game_data* data, sound_ctl* game_sound, long delta_time_ms)
     break;
   }
 
-  change.y += data->fall_speed / delta_time_ms;
+  change.y += data->fall_speed * delta_time_us;
 
   if(check_horizontal_collision(vec2add(&data->falling_piece, &change), data))
   {
@@ -299,12 +301,12 @@ running_update(game_data* data, sound_ctl* game_sound, long delta_time_ms)
   }
 }
 
-void update(game_data* data, sound_ctl* game_sound, long delta_time_ms)
+void update(game_data* data, sound_ctl* game_sound, long delta_time_us)
 {
   switch(data->state)
   {
   case T_GS_RUNNING:
-    running_update(data, game_sound, delta_time_ms);
+    running_update(data, game_sound, delta_time_us);
     break;
   default:
     return;
