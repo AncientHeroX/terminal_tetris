@@ -23,12 +23,10 @@ typedef struct
   int         lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
   color_pairs color_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
 
-  long  score;
-  long  level;
-  long  lines_cleared;
+  int   score;
+  int   level;
+  int   lines_cleared;
   float fall_speed;
-
-  long points;
 } game_data;
 
 void update(game_data* data, sound_ctl* game_sound, long delta_time_ms);

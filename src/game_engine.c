@@ -12,7 +12,7 @@
 
 #define MAX_LEVEL 15
 
-static float calculate_fall_speed(long level)
+static float calculate_fall_speed(int level)
 {
   return 1e-6f * exp((0.2f) * level);
 }
@@ -43,24 +43,24 @@ static void lock_piece(game_data* data)
     }
   }
 }
-static void update_level(game_data* data, long lines_cleared)
+static void update_level(game_data* data, int lines_cleared)
 {
   if(lines_cleared <= 0)
     return;
 
   data->lines_cleared += lines_cleared;
-  if(data->lines_cleared > 10)
+  if(data->lines_cleared >= 10)
   {
     data->lines_cleared %= 10;
-    data->level = data->level + 1 > MAX_LEVEL ? MAX_LEVEL : data->level;
+    data->level = data->level + 1 > MAX_LEVEL ? MAX_LEVEL : data->level + 1;
   }
 
   data->fall_speed = calculate_fall_speed(data->level);
 }
 
-static void update_score(game_data* data, long lines_cleared)
+static void update_score(game_data* data, int lines_cleared)
 {
-  static long line_scores[] = { 40, 100, 300, 1200 };
+  static int line_scores[] = { 40, 100, 300, 1200 };
 
   if(lines_cleared <= 0)
     return;
@@ -271,7 +271,7 @@ running_update(game_data* data, sound_ctl* game_sound, long delta_time_us)
 
   if(check_lower_collision(vec2add(&data->falling_piece, &change), data))
   {
-    if(data->falling_piece.y <= 0)
+    if(data->falling_piece.y <= 3)
     {
       data->state = T_GS_GAMEOVER;
       play_sound(game_sound, SOUND_GAME_OVER);
@@ -341,7 +341,7 @@ void draw(View* view, game_data* data)
     break;
   case T_GS_GAMEOVER:
     running_draw(view, data);
-    render_game_over(view);
+    render_game_over(view, data->score);
     break;
   }
 }

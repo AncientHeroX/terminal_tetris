@@ -34,4 +34,4 @@ void display_data(View* view, long level, long score);
 void view_refresh(View* view);
 void view_clear(View* view);
 
-void render_game_over(View* view);
+void render_game_over(View* view, const int score);

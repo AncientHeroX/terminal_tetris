@@ -1,0 +1,101 @@
+#include "numbers.h"
+
+#include <assert.h>
+#include <ncurses.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+static int log_lookup(unsigned int x)
+{
+  return (x >= 100000000u)  ? 8
+         : (x >= 10000000u) ? 7
+         : (x >= 1000000u)  ? 6
+         : (x >= 100000u)   ? 5
+         : (x >= 10000u)    ? 4
+         : (x >= 1000u)     ? 3
+         : (x >= 100u)      ? 2
+         : (x >= 10u)       ? 1
+                            : 0;
+}
+static const int pow10_int[]
+  = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+
+static const char* numbers[]
+  = { "  __\n /  \\\n| () |\n \\__/\0", " _\n/ |\n| |\n|_|\0",
+      " ___\n|_  )\n / /\n/___|\0",     " ____\n|__ /\n |_ \\\n|___/\0",
+      " _ _\n| | |\n|_  _|\n  |_|\0",   " ___\n| __|\n|__ \\\n|___/\0",
+      " __\n/ /\n/ _ \\\n\\___/\0",     " ____\n|__  |\n  / /\n /_/\0",
+      " ___\n( _ )\n/ _ \\\n\\___/\0",  " ___\n/ _ \\\n\\_, /\n /_/\0" };
+static const int widths[] = { 5, 3, 4, 4, 5, 4, 4, 5, 4, 4 };
+#define NUMBER_HEIGHT 4
+#define BUFF_WIDTH (9 * 5)
+
+
+static void write_digit_to_buff(char buff[NUMBER_HEIGHT][BUFF_WIDTH + 1],
+                                const size_t start,
+                                const int    digit)
+{
+  if(digit < 0 || digit > 9)
+    return;
+
+  uint8_t ptr = 0;
+
+  uint32_t x_offset = 0, y_offset = 0;
+
+  char   c;
+  size_t x;
+  while((c = numbers[digit][ptr++]) != '\0')
+  {
+    assert(digit >= 0 && digit <= 9);
+    if(c == '\n')
+    {
+      y_offset++;
+      x_offset = 0;
+      continue;
+    }
+
+    x = start + x_offset;
+    x = x < BUFF_WIDTH ? x : BUFF_WIDTH;
+
+    if(buff[y_offset][x] == ' ')
+      buff[y_offset][x] = c;
+
+    x_offset++;
+  }
+}
+
+
+void w_print_number(WINDOW* w, const int x, const int y, int num)
+{
+  char buff[NUMBER_HEIGHT][BUFF_WIDTH + 1];
+  for(size_t h = 0; h < NUMBER_HEIGHT; h++)
+  {
+    memset(buff[h], ' ', sizeof(buff[0]));
+    buff[h][BUFF_WIDTH] = '\0';
+  }
+
+  int8_t curr_place = log_lookup((unsigned int)num);
+
+  int start = 0;
+
+  while(curr_place >= 0)
+  {
+    int curr_digit = (int)(num / pow10_int[curr_place]);
+
+    write_digit_to_buff(buff, start, curr_digit);
+
+    start += widths[curr_digit];
+
+    if(start > BUFF_WIDTH)
+      break;
+
+    num -= pow10_int[curr_place] * curr_digit;
+    curr_place--;
+  }
+
+  for(int r = 0; r < NUMBER_HEIGHT; r++)
+  {
+    mvwaddstr(w, y + r, x, buff[r]);
+  }
+}

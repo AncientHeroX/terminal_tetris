@@ -1,4 +1,5 @@
 #include "view.h"
+#include "numbers.h"
 #include <ncurses.h>
 #include <stdio.h>
 #include <string.h>
@@ -262,8 +263,10 @@ static int render_string(WINDOW* w, int x, int y, const char* str)
   return py;
 }
 
-void render_game_over(View* view)
+void render_game_over(View* view, const int score)
 {
-  const int next_line = render_string(view->game, 7, 15, game_over_str[0]);
-  render_string(view->game, 7, next_line, game_over_str[1]);
+  int next_line = render_string(view->game, 7, 12, game_over_str[0]);
+  next_line     = render_string(view->game, 7, next_line, game_over_str[1]);
+
+  w_print_number(view->game, 1, next_line + 1, score);
 }
