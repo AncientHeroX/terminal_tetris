@@ -1,5 +1,4 @@
 #include "numbers.h"
-#include "defs.h"
 
 #include <assert.h>
 #include <ncurses.h>
@@ -7,18 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int log_lookup(unsigned int x)
-{
-  return (x >= 100000000u)  ? 8
-         : (x >= 10000000u) ? 7
-         : (x >= 1000000u)  ? 6
-         : (x >= 100000u)   ? 5
-         : (x >= 10000u)    ? 4
-         : (x >= 1000u)     ? 3
-         : (x >= 100u)      ? 2
-         : (x >= 10u)       ? 1
-                            : 0;
-}
 static const int pow10_int[]
   = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
 
@@ -26,9 +13,9 @@ static const char* numbers[]
   = { "  __\n /  \\\n| () |\n \\__/\0", " _\n/ |\n| |\n|_|\0",
       " ___\n|_  )\n / /\n/___|\0",     " ____\n|__ /\n |_ \\\n|___/\0",
       " _ _\n| | |\n|_  _|\n  |_|\0",   " ___\n| __|\n|__ \\\n|___/\0",
-      " __\n/ /\n/ _ \\\n\\___/\0",     " ____\n|__  |\n  / /\n /_/\0",
+      "  __\n / /\n/ _ \\\n\\___/\0",   " ____\n|__  |\n  / /\n /_/\0",
       " ___\n( _ )\n/ _ \\\n\\___/\0",  " ___\n/ _ \\\n\\_, /\n /_/\0" };
-static const int widths[] = { 4, 3, 4, 4, 5, 4, 4, 5, 4, 4 };
+static const int widths[] = { 5, 3, 4, 4, 5, 4, 4, 5, 4, 4 };
 #define NUMBER_HEIGHT 4
 #define BUFF_WIDTH (9 * 5)
 
@@ -80,13 +67,19 @@ void w_print_number(WINDOW*   w,
     buff[h][BUFF_WIDTH] = '\0';
   }
 
-  int8_t curr_place = log_lookup((unsigned int)num);
+  int8_t curr_place = 7;
 
   int draw_pos = 0;
 
   while(curr_place >= 0)
   {
-    int curr_digit = (int)(num / pow10_int[curr_place]);
+    int magnitude = pow10_int[curr_place];
+
+    int curr_digit;
+    if(num < magnitude)
+      curr_digit = 0;
+    else
+      curr_digit = (int)(num / magnitude);
 
     write_digit_to_buff(buff, draw_pos, curr_digit);
 
