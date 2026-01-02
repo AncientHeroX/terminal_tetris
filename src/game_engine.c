@@ -257,10 +257,41 @@ running_update(game_data* data, sound_ctl* game_sound, long delta_time_us)
     }
   }
   break;
-  case ' ':
+  case 's':
+  case KEY_DOWN:
     change.y = 2;
     break;
+  case ' ':
+  {
+    data->falling_piece.y++;
+    while(check_lower_collision(data->falling_piece, data) == 0)
+    {
+      data->falling_piece.y++;
+    }
+
+    data->falling_piece.y -= 1;
+    play_sound(game_sound, SOUND_PLACE_BLOCK);
+    lock_piece(data);
+    new_block(data);
+
+    if(check_line(data))
+    {
+      play_sound(game_sound, SOUND_LINE_CLEAR);
+    }
+    return;
   }
+  break;
+  case 'p':
+    if(data->state != T_GS_PAUSED)
+      data->state = T_GS_PAUSED;
+    else
+      data->state = T_GS_RUNNING;
+    break;
+  }
+
+  if(data->state == T_GS_PAUSED)
+    return;
+
 
   change.y += data->fall_speed * delta_time_us;
 
@@ -305,6 +336,7 @@ void update(game_data* data, sound_ctl* game_sound, long delta_time_us)
 {
   switch(data->state)
   {
+  case T_GS_PAUSED:
   case T_GS_RUNNING:
     running_update(data, game_sound, delta_time_us);
     break;
@@ -336,12 +368,12 @@ void draw(View* view, game_data* data)
 {
   switch(data->state)
   {
-  case T_GS_RUNNING:
-    running_draw(view, data);
-    break;
   case T_GS_GAMEOVER:
     running_draw(view, data);
     render_game_over(view, data->score);
+    break;
+  default:
+    running_draw(view, data);
     break;
   }
 }

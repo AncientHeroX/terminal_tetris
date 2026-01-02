@@ -7,6 +7,7 @@ typedef enum
 {
   T_GS_RUNNING,
   T_GS_GAMEOVER,
+  T_GS_PAUSED,
 } game_states;
 
 typedef struct
