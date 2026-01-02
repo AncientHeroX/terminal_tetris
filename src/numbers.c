@@ -6,8 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const int pow10_int[]
-  = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+static const int pow10_int[] = { 1,         10,        100,     1000,
+                                 10000,     100000,    1000000, 10000000,
+                                 100000000, 1000000000 };
 
 static const char* numbers[]
   = { "  __\n /  \\\n| () |\n \\__/\0", " _\n/ |\n| |\n|_|\0",
@@ -67,7 +68,7 @@ void w_print_number(WINDOW*   w,
     buff[h][BUFF_WIDTH] = '\0';
   }
 
-  int8_t curr_place = 7;
+  int8_t curr_place = 8;
 
   int draw_pos = 0;
 

@@ -4,9 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// TODO (eduard):  Delete later
-//  #define DEBUG
-
 void place_block(WINDOW* window, const float pos_x, const float pos_y)
 {
   // horizontal movement normalization
@@ -176,35 +173,6 @@ void view_clear(View* view)
   werase(view->game);
   werase(view->next_block);
   werase(view->score);
-
-#ifdef DEBUG
-  int w_h, w_w;
-  getmaxyx(view->game, w_h, w_w);
-  int dark = 0;
-
-  for(int y = 1; y < w_h - 1; y++)
-  {
-    if(y % BLOCK_HEIGHT == 1)
-    {
-      dark = !dark;
-    }
-    for(int x = 1; x < w_w - 1; x++)
-    {
-      if(x % BLOCK_WIDTH == 1)
-      {
-        dark = !dark;
-      }
-      if(dark)
-      {
-        mvwaddch(view->game, y, x, ' ');
-      }
-      else
-      {
-        mvwaddch(view->game, y, x, ACS_CKBOARD);
-      }
-    }
-  }
-#endif
 }
 
 static const char* game_over_str[] = { " ____    _    __  __ _____\n\

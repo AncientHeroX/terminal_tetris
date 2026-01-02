@@ -11,6 +11,7 @@
 #include "view.h"
 
 #define MAX_LEVEL 15
+#define SCORE_MAX 1e9
 
 static float calculate_fall_speed(int level)
 {
@@ -65,7 +66,9 @@ static void update_score(game_data* data, int lines_cleared)
   if(lines_cleared <= 0)
     return;
 
-  data->score += line_scores[lines_cleared - 1] * data->level;
+  int new_score = data->score + line_scores[lines_cleared - 1] * data->level;
+
+  data->score = new_score < SCORE_MAX ? new_score : SCORE_MAX - 1;
 }
 
 static int check_line(game_data* data)
