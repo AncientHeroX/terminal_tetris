@@ -21,7 +21,7 @@ $(BIN_DIR)/$(APPNAME): $(OBJS)
 
 $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
 	mkdir -p $(BUILD_DIR)
-	$(CC) -c $< -o $@ $(CFLAGS) $(LDFLAGS) 
+	$(CC) -c $< -o $@ $(CFLAGS) $(LDFLAGS) -DDEBUG
 
 R_BUILD_DIR=./build/release
 R_BIN_DIR=./bin/release

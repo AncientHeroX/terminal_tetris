@@ -16,7 +16,7 @@ static const char* numbers[]
       " _ _\n| | |\n|_  _|\n  |_|\0",   " ___\n| __|\n|__ \\\n|___/\0",
       "  __\n / /\n/ _ \\\n\\___/\0",   " ____\n|__  |\n  / /\n /_/\0",
       " ___\n( _ )\n/ _ \\\n\\___/\0",  " ___\n/ _ \\\n\\_, /\n /_/\0" };
-static const int widths[] = { 5, 3, 4, 4, 5, 4, 4, 5, 4, 4 };
+static const int widths[] = { 4, 3, 4, 4, 4, 4, 4, 4, 4, 4 };
 #define NUMBER_HEIGHT 4
 #define BUFF_WIDTH (9 * 5)
 
@@ -69,8 +69,7 @@ void w_print_number(WINDOW*   w,
   }
 
   int8_t curr_place = 8;
-
-  int draw_pos = 0;
+  int    draw_pos   = 0;
 
   while(curr_place >= 0)
   {
@@ -80,7 +79,10 @@ void w_print_number(WINDOW*   w,
     if(num < magnitude)
       curr_digit = 0;
     else
+    {
       curr_digit = (int)(num / magnitude);
+      num -= pow10_int[curr_place] * curr_digit;
+    }
 
     write_digit_to_buff(buff, draw_pos, curr_digit);
 
@@ -89,7 +91,6 @@ void w_print_number(WINDOW*   w,
     if(draw_pos > BUFF_WIDTH)
       break;
 
-    num -= pow10_int[curr_place] * curr_digit;
     curr_place--;
   }
 
