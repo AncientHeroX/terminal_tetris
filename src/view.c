@@ -101,6 +101,7 @@ void create_colorpairs()
   init_pair(S_COLOR, COLOR_WHITE, COLOR_GREEN);
   init_pair(I_COLOR, COLOR_WHITE, COLOR_CYAN);
   init_pair(B_COLOR, COLOR_WHITE, COLOR_YELLOW);
+  init_pair(BW_COLOR, COLOR_BLACK, COLOR_WHITE);
 }
 
 int view_create(View* view)
@@ -268,5 +269,9 @@ void render_game_over(View* view, const int score)
   int next_line = render_string(view->game, 7, 12, game_over_str[0]);
   next_line     = render_string(view->game, 7, next_line, game_over_str[1]);
 
-  w_print_number(view->game, 1, next_line + 1, score);
+  w_print_number(view->game,
+                 1,
+                 next_line + 1,
+                 TETRIS_WIDTH * BLOCK_WIDTH,
+                 score);
 }

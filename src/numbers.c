@@ -1,4 +1,5 @@
 #include "numbers.h"
+#include "defs.h"
 
 #include <assert.h>
 #include <ncurses.h>
@@ -27,13 +28,13 @@ static const char* numbers[]
       " _ _\n| | |\n|_  _|\n  |_|\0",   " ___\n| __|\n|__ \\\n|___/\0",
       " __\n/ /\n/ _ \\\n\\___/\0",     " ____\n|__  |\n  / /\n /_/\0",
       " ___\n( _ )\n/ _ \\\n\\___/\0",  " ___\n/ _ \\\n\\_, /\n /_/\0" };
-static const int widths[] = { 5, 3, 4, 4, 5, 4, 4, 5, 4, 4 };
+static const int widths[] = { 4, 3, 4, 4, 5, 4, 4, 5, 4, 4 };
 #define NUMBER_HEIGHT 4
 #define BUFF_WIDTH (9 * 5)
 
 
 static void write_digit_to_buff(char buff[NUMBER_HEIGHT][BUFF_WIDTH + 1],
-                                const size_t start,
+                                const size_t draw_pos,
                                 const int    digit)
 {
   if(digit < 0 || digit > 9)
@@ -55,7 +56,7 @@ static void write_digit_to_buff(char buff[NUMBER_HEIGHT][BUFF_WIDTH + 1],
       continue;
     }
 
-    x = start + x_offset;
+    x = draw_pos + x_offset;
     x = x < BUFF_WIDTH ? x : BUFF_WIDTH;
 
     if(buff[y_offset][x] == ' ')
@@ -66,7 +67,11 @@ static void write_digit_to_buff(char buff[NUMBER_HEIGHT][BUFF_WIDTH + 1],
 }
 
 
-void w_print_number(WINDOW* w, const int x, const int y, int num)
+void w_print_number(WINDOW*   w,
+                    const int x,
+                    const int y,
+                    const int width,
+                    int       num)
 {
   char buff[NUMBER_HEIGHT][BUFF_WIDTH + 1];
   for(size_t h = 0; h < NUMBER_HEIGHT; h++)
@@ -77,25 +82,27 @@ void w_print_number(WINDOW* w, const int x, const int y, int num)
 
   int8_t curr_place = log_lookup((unsigned int)num);
 
-  int start = 0;
+  int draw_pos = 0;
 
   while(curr_place >= 0)
   {
     int curr_digit = (int)(num / pow10_int[curr_place]);
 
-    write_digit_to_buff(buff, start, curr_digit);
+    write_digit_to_buff(buff, draw_pos, curr_digit);
 
-    start += widths[curr_digit];
+    draw_pos += widths[curr_digit];
 
-    if(start > BUFF_WIDTH)
+    if(draw_pos > BUFF_WIDTH)
       break;
 
     num -= pow10_int[curr_place] * curr_digit;
     curr_place--;
   }
 
+  int middle = (int)(width / 2) - (int)(draw_pos / 2);
+
   for(int r = 0; r < NUMBER_HEIGHT; r++)
   {
-    mvwaddstr(w, y + r, x, buff[r]);
+    mvwaddstr(w, y + r, x + middle, buff[r]);
   }
 }
