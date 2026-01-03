@@ -1,4 +1,5 @@
 #include "numbers.h"
+#include "debug.h"
 
 #include <assert.h>
 #include <ncurses.h>
