@@ -71,9 +71,70 @@ static void update_score(game_data* data, int lines_cleared)
   data->score = new_score < SCORE_MAX ? new_score : SCORE_MAX - 1;
 }
 
+void shift_line(game_data* data) 
+{
+  // Shift
+  int next_blank = 0;
+  int curr_line  = data->lines_to_clear[next_blank++];
+
+  for(int y = curr_line - 1; y >= 0; y--)
+  {
+    if(y == data->lines_to_clear[next_blank])
+    {
+      next_blank++;
+      continue;
+    }
+    assert(curr_line > y);
+
+    for(int x = 0; x < TETRIS_WIDTH; x++)
+    {
+      data->lower_pool[x][curr_line] = data->lower_pool[x][y];
+      data->lower_pool[x][y]         = data->lower_pool[x][y];
+
+      data->color_pool[x][curr_line] = data->color_pool[x][y];
+      data->color_pool[x][y]         = data->color_pool[x][y];
+    }
+    curr_line--;
+  }
+
+  for(int i = 0; i < TETRIS_HEIGHT; i++)
+  {
+    data->lines_to_clear[i] = 0;
+  }
+}
+
+static void update_line_removal(game_data* data, long delta_time_us) 
+{
+  data->animation_time_lasped += delta_time_us; 
+
+  int current_time_interval = data->animation_time_lasped / 150000;
+
+  if(current_time_interval > data->animation_time_interval & data->current_delete_block < TETRIS_WIDTH) {
+    data->animation_time_interval++;
+    int delete_pair = data->current_delete_block - data->delete_pair_seperation;
+
+    for(int y = data->lines_cleared - 1; y >= 0; y--)
+    {
+      if(data->lines_to_clear[y] != 0)
+      {
+          data->color_pool[data->current_delete_block][data->lines_to_clear[y]] = LINE_CLEARED_COLOR;
+          data->color_pool[delete_pair][data->lines_to_clear[y]] = LINE_CLEARED_COLOR;
+      }
+  }
+    data->delete_pair_seperation += 2;
+    data->current_delete_block++;
+  }
+  else if(current_time_interval > data->animation_time_interval)
+  {
+    shift_line(data);
+    data->animation_time_lasped = 0;
+    data->animation_time_interval = 0;
+    data->state = T_GS_RUNNING;
+  }
+}
+
 static int check_line(game_data* data)
 {
-  int    lines[TETRIS_HEIGHT] = { 0 };
   size_t lines_cleared        = 0;
 
   for(int y = TETRIS_HEIGHT - 1; y >= 0; y--)
@@ -85,34 +146,12 @@ static int check_line(game_data* data)
         count++;
     }
     if(count == TETRIS_WIDTH)
-      lines[lines_cleared++] = y;
+      data->lines_to_clear[lines_cleared++] = y;
   }
 
   if(lines_cleared > 0)
   {
-    // Shift
-    int next_blank = 0;
-    int curr_line  = lines[next_blank++];
-
-    for(int y = curr_line - 1; y >= 0; y--)
-    {
-      if(y == lines[next_blank])
-      {
-        next_blank++;
-        continue;
-      }
-      assert(curr_line > y);
-
-      for(int x = 0; x < TETRIS_WIDTH; x++)
-      {
-        data->lower_pool[x][curr_line] = data->lower_pool[x][y];
-        data->lower_pool[x][y]         = data->lower_pool[x][y];
-
-        data->color_pool[x][curr_line] = data->color_pool[x][y];
-        data->color_pool[x][y]         = data->color_pool[x][y];
-      }
-      curr_line--;
-    }
+    data->state = T_GS_LINE_CLEARED;
   }
 
   update_level(data, lines_cleared);
@@ -343,6 +382,9 @@ void update(game_data* data, sound_ctl* game_sound, long delta_time_us)
   case T_GS_RUNNING:
     running_update(data, game_sound, delta_time_us);
     break;
+  case T_GS_LINE_CLEARED:
+    update_line_removal(data, delta_time_us);
+    break;
   default:
     return;
   }
@@ -385,14 +427,20 @@ void draw(View* view, game_data* data)
 void init_game_state(game_data* data)
 {
   srand(time(NULL));
-  data->level         = 1;
-  data->score         = 0;
-  data->lines_cleared = 0;
-  data->fall_speed    = calculate_fall_speed(data->level);
-  data->state         = T_GS_RUNNING;
+  data->level                  = 1;
+  data->score                  = 0;
+  data->lines_cleared          = 0;
+  data->current_delete_block   = TETRIS_WIDTH/2;
+  data->delete_pair_seperation = 1;
+  data->animation_time_lasped  = 0;
+  data->animation_time_interval = 0;
+  data->fall_speed             = calculate_fall_speed(data->level);
+  data->state                  = T_GS_RUNNING;
 
   data->next_piece = block_types[(int)(rand() % 7)];
   new_block(data);
+
+  memset(data->lines_to_clear, 0, sizeof(int) * TETRIS_HEIGHT);
 
   for(int i = 0; i < TETRIS_WIDTH; i++)
   {

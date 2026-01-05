@@ -2,12 +2,14 @@
 #include "defs.h"
 #include "sound.h"
 #include "view.h"
+#include "debug.h"
 
 typedef enum
 {
   T_GS_RUNNING,
   T_GS_GAMEOVER,
   T_GS_PAUSED,
+  T_GS_LINE_CLEARED,
 } game_states;
 
 typedef struct
@@ -23,6 +25,12 @@ typedef struct
 
   int         lower_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
   color_pairs color_pool[TETRIS_WIDTH][TETRIS_HEIGHT];
+
+  int  lines_to_clear[TETRIS_HEIGHT];
+  int  current_delete_block;
+  int  delete_pair_seperation;
+  int  animation_time_interval;
+  long animation_time_lasped;
 
   int   score;
   int   level;

@@ -19,6 +19,7 @@ typedef enum
   S_COLOR,
   I_COLOR,
   B_COLOR,
+  LINE_CLEARED_COLOR,
 } color_pairs;
 
 typedef enum

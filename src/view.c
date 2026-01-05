@@ -98,6 +98,7 @@ void create_colorpairs()
   init_pair(S_COLOR, COLOR_WHITE, COLOR_GREEN);
   init_pair(I_COLOR, COLOR_WHITE, COLOR_CYAN);
   init_pair(B_COLOR, COLOR_WHITE, COLOR_YELLOW);
+  init_pair(LINE_CLEARED_COLOR, COLOR_WHITE, COLOR_WHITE);
 }
 
 int view_create(View* view)
