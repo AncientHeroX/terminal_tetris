@@ -104,7 +104,7 @@ void shift_line(game_data* data)
 }
 
 
-#define FRAME_INTERVAL_US (1 / 100000.0f)
+#define FRAME_INTERVAL_US (1 / 60000.0f)
 static void update_line_removal(game_data* data, long delta_time_us)
 {
   data->animation_time_lapsed_us += delta_time_us;
@@ -120,8 +120,6 @@ static void update_line_removal(game_data* data, long delta_time_us)
   {
     data->animation_frame++;
     int delete_pair = (TETRIS_WIDTH - data->current_delete_block) - 1;
-    varlog("%d\n", delete_pair);
-
 
     for(int y = data->clear_count - 1; y >= 0; y--)
     {
@@ -141,9 +139,8 @@ static void update_line_removal(game_data* data, long delta_time_us)
     shift_line(data);
     data->animation_time_lapsed_us = 0;
     data->current_delete_block     = (TETRIS_WIDTH / 2) - 1;
-    varlog("%d\n", data->current_delete_block);
-    data->animation_frame = 0;
-    data->state           = T_GS_RUNNING;
+    data->animation_frame          = 0;
+    data->state                    = T_GS_RUNNING;
   }
 }
 

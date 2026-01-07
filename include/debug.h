@@ -19,4 +19,5 @@
 #else
 #define dlog(fmt, ...)
 #define PANIC(msg)
+#define varlog(fmt, var, ...)
 #endif
