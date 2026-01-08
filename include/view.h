@@ -34,4 +34,8 @@ void display_data(View* view, long level, long score);
 void view_refresh(View* view);
 void view_clear(View* view);
 
-void render_game_over(View* view, const int score);
+void render_game_over(View* restrict view,
+                      const int  score,
+                      const bool draw_keyboard,
+                      const char* restrict name,
+                      const char keyboard_pointer);

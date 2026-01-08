@@ -20,6 +20,7 @@ typedef enum
   I_COLOR,
   B_COLOR,
   LINE_CLEARED_COLOR,
+  KEY_SELECT_COLOR
 } color_pairs;
 
 typedef enum
@@ -30,9 +31,19 @@ typedef enum
   RIGHT
 } rotation;
 
+
 typedef struct
 {
   float x, y;
 } vector2;
 
 color_pairs get_type_color(block_type type);
+
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+#define KEYBOARD_BUTTONS_PER_LINE 6
+#define KEYBOARD_BUTTON_WIDTH 5
+#define DEL_CHAR_KEY 'Z' + 1
+#define CONFIRM_CHAR_KEY DEL_CHAR_KEY + 1

@@ -7,6 +7,8 @@
 #include <time.h>
 
 #include "game_engine.h"
+#include "debug.h"
+#include "save.h"
 #include "sound.h"
 #include "view.h"
 
@@ -68,7 +70,7 @@ static void update_score(game_data* data, int lines_cleared)
 
   int new_score = data->score + line_scores[lines_cleared - 1] * data->level;
 
-  data->score = new_score < SCORE_MAX ? new_score : SCORE_MAX - 1;
+  data->score = MIN(new_score, SCORE_MAX);
 }
 
 void shift_line(game_data* data)
@@ -359,8 +361,13 @@ running_update(game_data* data, sound_ctl* game_sound, long delta_time_us)
   {
     if(data->falling_piece.y <= 3)
     {
-      data->state = T_GS_GAMEOVER;
+      data->state = T_GS_SAVE_SCORE;
+
+      load_leaderboard(&data->game_over_state.leaderboard);
+      update_highscore(&data->game_over_state, data->score);
+
       play_sound(game_sound, SOUND_GAME_OVER);
+
       return;
     }
 
@@ -387,6 +394,65 @@ running_update(game_data* data, sound_ctl* game_sound, long delta_time_us)
   }
 }
 
+static void
+gameover_update(game_data* data, sound_ctl* game_sound, long delta_time_us)
+{
+
+  int c = getch();
+
+  if(!data->game_over_state.is_highscore)
+  {
+    if(c == ' ')
+    {
+      // todo (eduard): Switch to leaderboard
+      NOT_IMPLEMENTED;
+    }
+  }
+
+
+  switch(c)
+  {
+  case KEY_UP:
+  case 'w':
+    data->game_over_state.keyboard_pointer -= KEYBOARD_BUTTONS_PER_LINE;
+    break;
+  case KEY_LEFT:
+  case 'a':
+    data->game_over_state.keyboard_pointer -= 1;
+    break;
+  case KEY_DOWN:
+  case 's':
+    data->game_over_state.keyboard_pointer += KEYBOARD_BUTTONS_PER_LINE;
+    break;
+  case KEY_RIGHT:
+  case 'd':
+    data->game_over_state.keyboard_pointer += 1;
+    break;
+  case ' ':
+    if(data->game_over_state.keyboard_pointer == DEL_CHAR_KEY)
+    {
+      data->game_over_state.player_name[--data->game_over_state.player_name_ptr]
+        = '\0';
+    }
+    else if(data->game_over_state.keyboard_pointer == CONFIRM_CHAR_KEY)
+    {
+      save_score(data->game_over_state.leaderboard,
+                 data->game_over_state.player_name,
+                 data->score);
+      NOT_IMPLEMENTED;
+    }
+
+    else if(data->game_over_state.player_name_ptr < 3)
+    {
+      data->game_over_state.player_name[data->game_over_state.player_name_ptr++]
+        = data->game_over_state.keyboard_pointer;
+    }
+    break;
+  }
+  data->game_over_state.keyboard_pointer
+    = MIN(MAX('A', data->game_over_state.keyboard_pointer), CONFIRM_CHAR_KEY);
+}
+
 void update(game_data* data, sound_ctl* game_sound, long delta_time_us)
 {
   switch(data->state)
@@ -398,6 +464,11 @@ void update(game_data* data, sound_ctl* game_sound, long delta_time_us)
   case T_GS_LINE_CLEARED:
     update_line_removal(data, delta_time_us);
     break;
+  case T_GS_SAVE_SCORE:
+  {
+    gameover_update(data, game_sound, delta_time_us);
+  }
+  break;
   default:
     return;
   }
@@ -426,9 +497,13 @@ void draw(View* view, game_data* data)
 {
   switch(data->state)
   {
-  case T_GS_GAMEOVER:
+  case T_GS_SAVE_SCORE:
     running_draw(view, data);
-    render_game_over(view, data->score);
+    render_game_over(view,
+                     data->score,
+                     data->game_over_state.is_highscore,
+                     data->game_over_state.player_name,
+                     data->game_over_state.keyboard_pointer);
     break;
   default:
     running_draw(view, data);
@@ -440,6 +515,8 @@ void draw(View* view, game_data* data)
 void init_game_state(game_data* data)
 {
   srand(time(NULL));
+  memset(data, 0, sizeof(game_data));
+
   data->level         = 1;
   data->score         = 0;
   data->lines_cleared = 0;
@@ -452,6 +529,9 @@ void init_game_state(game_data* data)
 
   memset(data->lines_to_clear, 0, sizeof(int) * MAX_LINE_CLEAR);
   data->clear_count = 0;
+
+  data->game_over_state.keyboard_pointer = 'A';
+  memset(data->game_over_state.player_name, '\0', 4 * sizeof(char));
 
   data->next_piece = block_types[(int)(rand() % 7)];
   new_block(data);
@@ -468,4 +548,16 @@ void render_block(View* view, game_data* data)
                     data->falling_piece_type,
                     data->falling_piece,
                     data->pair);
+}
+
+void update_highscore(game_over_data* data, const int score)
+{
+  dlog("%zu\n", data->leaderboard.score_count);
+  if(data->leaderboard.score_count < LEADERBOARD_CAP
+     || score >= data->leaderboard.scores[data->leaderboard.score_count - 1])
+  {
+    data->is_highscore = true;
+    return;
+  }
+  data->is_highscore = false;
 }

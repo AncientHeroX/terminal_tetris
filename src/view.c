@@ -1,8 +1,12 @@
 #include "view.h"
+#include "debug.h"
 #include "numbers.h"
+#include <assert.h>
+#include <curses.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <string.h>
+
 
 void place_block(WINDOW* window, const float pos_x, const float pos_y)
 {
@@ -99,6 +103,7 @@ void create_colorpairs()
   init_pair(I_COLOR, COLOR_WHITE, COLOR_CYAN);
   init_pair(B_COLOR, COLOR_WHITE, COLOR_YELLOW);
   init_pair(LINE_CLEARED_COLOR, COLOR_WHITE, COLOR_WHITE);
+  init_pair(KEY_SELECT_COLOR, COLOR_BLACK, COLOR_WHITE);
 }
 
 int view_create(View* view)
@@ -231,15 +236,144 @@ static int render_string(WINDOW* w, int x, int y, const char* str)
   }
   return py;
 }
-
-void render_game_over(View* view, const int score)
+static void w_print_divider(WINDOW* win, const int y)
 {
-  int next_line = render_string(view->game, 7, 12, game_over_str[0]);
+  wmove(win, y, 1);
+  for(int x = 0; x < TETRIS_WIDTH * BLOCK_WIDTH; x++)
+  {
+    waddch(win, '-');
+  }
+}
+static void clear_line(WINDOW* win, const int y)
+{
+  wmove(win, y, 1);
+  for(int x = 0; x < TETRIS_WIDTH * BLOCK_WIDTH; x++)
+  {
+    waddch(win, ' ');
+  }
+}
+
+#define GET_CENTER_IN_GAMEWINDOW(item_width)                                   \
+  (int)((TETRIS_WIDTH * BLOCK_WIDTH) / 2) - ((item_width) / 2)
+
+static int w_print_name(WINDOW* win, const char* name, int y)
+{
+  w_print_divider(win, y++);
+
+  clear_line(win, y);
+
+  const int start = GET_CENTER_IN_GAMEWINDOW(5);
+  wmove(win, y++, start);
+  for(int c = 0; c < 3; c++)
+  {
+    if(name[c] == '\0')
+    {
+      waddch(win, ACS_CKBOARD);
+    }
+    else
+    {
+      waddch(win, name[c]);
+    }
+    waddch(win, ' ');
+  }
+
+  w_print_divider(win, y++);
+  return y;
+}
+static int w_print_keyboard(WINDOW* win, int y, const char keyboard_pointer)
+{
+  assert(keyboard_pointer >= 'A' && keyboard_pointer <= CONFIRM_CHAR_KEY);
+
+  int start_x = GET_CENTER_IN_GAMEWINDOW(
+    KEYBOARD_BUTTONS_PER_LINE * KEYBOARD_BUTTON_WIDTH + 2);
+  int x = start_x + 1;
+
+  clear_line(win, y);
+  wmove(win, y, x);
+  for(char c = 'A'; c <= 'Z'; c++)
+  {
+    char str[6];
+    sprintf(str, "[ %c ]", c);
+
+    if(c == keyboard_pointer)
+    {
+      wattron(win, COLOR_PAIR(KEY_SELECT_COLOR));
+      waddnstr(win, str, 5);
+      wattroff(win, COLOR_PAIR(KEY_SELECT_COLOR));
+    }
+    else
+    {
+      waddnstr(win, str, 5);
+    }
+
+    x += KEYBOARD_BUTTON_WIDTH;
+    if(x > KEYBOARD_BUTTONS_PER_LINE * KEYBOARD_BUTTON_WIDTH)
+    {
+      y += 1;
+
+      x = start_x + 1;
+      clear_line(win, y);
+      wmove(win, y, x);
+    }
+  }
+
+  if(DEL_CHAR_KEY == keyboard_pointer)
+  {
+    wattron(win, COLOR_PAIR(KEY_SELECT_COLOR));
+    waddnstr(win, "[DEL]", 5);
+    wattroff(win, COLOR_PAIR(KEY_SELECT_COLOR));
+  }
+  else
+  {
+    waddnstr(win, "[DEL]", 5);
+  }
+
+  if(CONFIRM_CHAR_KEY == keyboard_pointer)
+  {
+    wattron(win, COLOR_PAIR(KEY_SELECT_COLOR));
+    waddnstr(win, "[ENT]", 5);
+    wattroff(win, COLOR_PAIR(KEY_SELECT_COLOR));
+  }
+  else
+  {
+    waddnstr(win, "[ENT]", 5);
+  }
+  return y;
+}
+
+static void w_print_continue(WINDOW* win, int y)
+{
+  const char button_string[] = "[ CONT ]";
+  clear_line(win, y);
+
+  const int x = GET_CENTER_IN_GAMEWINDOW(sizeof(button_string));
+  wmove(win, y, x);
+  wattron(win, COLOR_PAIR(KEY_SELECT_COLOR));
+  waddnstr(win, button_string, sizeof(button_string));
+  wattroff(win, COLOR_PAIR(KEY_SELECT_COLOR));
+}
+
+void render_game_over(View*       view,
+                      const int   score,
+                      const bool  draw_keyboard,
+                      const char* name,
+                      const char  keyboard_pointer)
+
+{
+  int next_line = render_string(view->game, 7, 1, game_over_str[0]);
   next_line     = render_string(view->game, 7, next_line, game_over_str[1]);
 
-  w_print_number(view->game,
-                 1,
-                 next_line + 1,
-                 TETRIS_WIDTH * BLOCK_WIDTH,
-                 score);
+  w_print_number(view->game, 1, next_line, TETRIS_WIDTH * BLOCK_WIDTH, score);
+  next_line += 5;
+
+  if(draw_keyboard)
+  {
+    next_line = w_print_name(view->game, name, next_line);
+
+    w_print_keyboard(view->game, next_line + 1, keyboard_pointer);
+  }
+  else
+  {
+    w_print_continue(view->game, next_line);
+  }
 }

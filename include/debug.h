@@ -16,8 +16,18 @@
     abort();                                                                   \
   }                                                                            \
   while(0)
+#define UNREACHABLE 0
+#define NOT_IMPLEMENTED                                                        \
+  do                                                                           \
+  {                                                                            \
+    dlog("Function not implemented!\n");                                       \
+    assert(0); /* crashes in debug */                                          \
+    abort();   /* crashes in release */                                        \
+  }                                                                            \
+  while(0)
 #else
 #define dlog(fmt, ...)
 #define PANIC(msg)
 #define varlog(fmt, var, ...)
+#define NOT_IMPLEMENTED #define UNREACHABLE
 #endif

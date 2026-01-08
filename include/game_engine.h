@@ -1,18 +1,28 @@
 #pragma once
 #include "defs.h"
+#include "save.h"
 #include "sound.h"
 #include "view.h"
-#include "debug.h"
 
 #define MAX_LINE_CLEAR 4
 
 typedef enum
 {
   T_GS_RUNNING,
-  T_GS_GAMEOVER,
+  T_GS_SAVE_SCORE,
   T_GS_PAUSED,
   T_GS_LINE_CLEARED,
 } game_states;
+
+typedef struct
+{
+  bool    is_highscore;
+  uint8_t player_name_ptr;
+  char    player_name[4];
+  char    keyboard_pointer;
+
+  leaderboard_t leaderboard;
+} game_over_data;
 
 typedef struct
 {
@@ -38,10 +48,15 @@ typedef struct
   int    current_delete_block;
   int    animation_frame;
   long   animation_time_lapsed_us;
+
+  game_over_data game_over_state;
 } game_data;
+
 
 void update(game_data* data, sound_ctl* game_sound, long delta_time_ms);
 void draw(View* view, game_data* data);
 void init_game_state(game_data* data);
 
 void render_block(View* view, game_data* data);
+
+void update_highscore(game_over_data* data, const int score);
