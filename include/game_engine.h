@@ -9,9 +9,10 @@
 typedef enum
 {
   T_GS_RUNNING,
-  T_GS_SAVE_SCORE,
   T_GS_PAUSED,
+  T_GS_SAVE_SCORE,
   T_GS_LINE_CLEARED,
+  T_GS_LEADERBOARD
 } game_states;
 
 typedef struct

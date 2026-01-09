@@ -35,7 +35,7 @@ $(R_BIN_DIR)/$(APPNAME): $(R_OBJS)
 
 $(R_BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
 	mkdir -p $(R_BUILD_DIR)
-	$(CC) -c $< -o $@ $(R_CFLAGS) 
+	$(CC) -c $< -o $@ $(R_CFLAGS) -DNDEBUG
 	
 release: $(R_BIN_DIR)/$(APPNAME)
 

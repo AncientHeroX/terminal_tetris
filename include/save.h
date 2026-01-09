@@ -22,6 +22,7 @@ typedef struct
 typedef unsigned char byte_t;
 
 int  load_leaderboard(leaderboard_t* leaderboard_buff);
-void save_score(leaderboard_t     leaderboard,
+void save_score(leaderboard_t*    leaderboard,
                 const player_name name,
                 const int         score);
+void sort_scores(leaderboard_t* leaderboard);

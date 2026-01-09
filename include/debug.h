@@ -30,4 +30,5 @@
 #define PANIC(msg)
 #define varlog(fmt, var, ...)
 #define NOT_IMPLEMENTED #define UNREACHABLE
+#define UNREACHABLE 0
 #endif

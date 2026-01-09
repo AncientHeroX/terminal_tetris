@@ -2,6 +2,7 @@
 #include <ncurses.h>
 
 #include "defs.h"
+#include "save.h"
 
 #define BLOCK_WIDTH 4
 #define BLOCK_HEIGHT 2
@@ -39,3 +40,4 @@ void render_game_over(View* restrict view,
                       const bool draw_keyboard,
                       const char* restrict name,
                       const char keyboard_pointer);
+void render_leader_board(View* view, const leaderboard_t* leaderboard, int y);

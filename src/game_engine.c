@@ -404,8 +404,7 @@ gameover_update(game_data* data, sound_ctl* game_sound, long delta_time_us)
   {
     if(c == ' ')
     {
-      // todo (eduard): Switch to leaderboard
-      NOT_IMPLEMENTED;
+      data->state = T_GS_LEADERBOARD;
     }
   }
 
@@ -436,10 +435,13 @@ gameover_update(game_data* data, sound_ctl* game_sound, long delta_time_us)
     }
     else if(data->game_over_state.keyboard_pointer == CONFIRM_CHAR_KEY)
     {
-      save_score(data->game_over_state.leaderboard,
+      save_score(&data->game_over_state.leaderboard,
                  data->game_over_state.player_name,
                  data->score);
-      NOT_IMPLEMENTED;
+
+      // sort_scores(&data->game_over_state.leaderboard);
+
+      data->state = T_GS_LEADERBOARD;
     }
 
     else if(data->game_over_state.player_name_ptr < 3)
@@ -465,10 +467,8 @@ void update(game_data* data, sound_ctl* game_sound, long delta_time_us)
     update_line_removal(data, delta_time_us);
     break;
   case T_GS_SAVE_SCORE:
-  {
     gameover_update(data, game_sound, delta_time_us);
-  }
-  break;
+    break;
   default:
     return;
   }
@@ -504,6 +504,10 @@ void draw(View* view, game_data* data)
                      data->game_over_state.is_highscore,
                      data->game_over_state.player_name,
                      data->game_over_state.keyboard_pointer);
+    break;
+  case T_GS_LEADERBOARD:
+    running_draw(view, data);
+    render_leader_board(view, &data->game_over_state.leaderboard, 5);
     break;
   default:
     running_draw(view, data);
@@ -552,9 +556,8 @@ void render_block(View* view, game_data* data)
 
 void update_highscore(game_over_data* data, const int score)
 {
-  dlog("%zu\n", data->leaderboard.score_count);
   if(data->leaderboard.score_count < LEADERBOARD_CAP
-     || score >= data->leaderboard.scores[data->leaderboard.score_count - 1])
+     || score >= data->leaderboard.scores[0])
   {
     data->is_highscore = true;
     return;

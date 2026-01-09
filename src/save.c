@@ -16,25 +16,25 @@ static void insertion_sort_scores(player_name* restrict names,
     player_name curr_name;
     COPY_NAME(curr_name, names[i]);
 
-    size_t j = i - 1;
-    while(j >= 0 && scores[j] > curr_score)
+    size_t j = i;
+    while(j > 0 && scores[j - 1] > curr_score)
     {
-      scores[j + 1] = scores[j];
-      COPY_NAME(names[j + 1], names[j]);
+      scores[j] = scores[j - 1];
+      COPY_NAME(names[j], names[j - 1]);
       j--;
     }
 
-    scores[j + 1] = curr_score;
-    COPY_NAME(names[j + 1], curr_name);
+    scores[j] = curr_score;
+    COPY_NAME(names[j], curr_name);
   }
 }
 
 
-static void sort_scores(player_name* restrict names,
-                        int* restrict scores,
-                        const size_t count)
+void sort_scores(leaderboard_t* leaderboard)
 {
-  return insertion_sort_scores(names, scores, count);
+  return insertion_sort_scores(leaderboard->names,
+                               leaderboard->scores,
+                               leaderboard->score_count);
 }
 
 #define SAVE_DATA(fileptr, dataptr, s, n)                                      \
@@ -45,7 +45,7 @@ static void sort_scores(player_name* restrict names,
     return;                                                                    \
   }
 
-void save_score(leaderboard_t     leaderboard,
+void save_score(leaderboard_t*    leaderboard,
                 const player_name name,
                 const int         score)
 {
@@ -59,26 +59,27 @@ void save_score(leaderboard_t     leaderboard,
 
   FILE* save_file = fopen("leaderboard/scores", "w");
 
-  if(leaderboard.score_count < LEADERBOARD_CAP)
+  if(leaderboard->score_count < LEADERBOARD_CAP)
   {
-    leaderboard.scores[leaderboard.score_count] = score;
-    COPY_NAME(leaderboard.names[leaderboard.score_count], name);
+    leaderboard->scores[leaderboard->score_count] = score;
+    COPY_NAME(leaderboard->names[leaderboard->score_count], name);
 
-    leaderboard.score_count++;
+    leaderboard->score_count++;
   }
-  else if(leaderboard.score_count == LEADERBOARD_CAP)
+  else if(leaderboard->score_count == LEADERBOARD_CAP)
   {
-    assert(score > leaderboard.scores[leaderboard.score_count - 1]);
+    assert(score > leaderboard->scores[0]);
 
-    leaderboard.scores[0] = score;
-    COPY_NAME(leaderboard.names[0], name);
+    leaderboard->scores[0] = score;
+    COPY_NAME(leaderboard->names[0], name);
   }
   else
   {
+    /* Should be UNREACHABLE through regular gameplay */
     assert(UNREACHABLE);
   }
 
-  sort_scores(leaderboard.names, leaderboard.scores, leaderboard.score_count);
+  sort_scores(leaderboard);
 
   if(ftell(save_file) == 0)
   {
@@ -87,12 +88,10 @@ void save_score(leaderboard_t     leaderboard,
       SAVE_DATA(save_file, signature, sizeof(char), 4);
   }
 
-  for(size_t i = 0; i < leaderboard.score_count; i++)
+  for(size_t i = 0; i < leaderboard->score_count; i++)
   {
-    dlog("saving %.4s - %d", leaderboard.names[i], leaderboard.scores[i]);
-
-    SAVE_DATA(save_file, &leaderboard.names[i], sizeof(char), 4);
-    SAVE_DATA(save_file, &leaderboard.scores[i], sizeof(int), 1);
+    SAVE_DATA(save_file, &leaderboard->names[i], sizeof(char), 4);
+    SAVE_DATA(save_file, &leaderboard->scores[i], sizeof(int), 1);
   }
 
   fclose(save_file);
@@ -104,7 +103,6 @@ void save_score(leaderboard_t     leaderboard,
 #define READ_DATA(fileptr, buffer, s, n)                                       \
   if(fread(buffer, s, n, fileptr) != n)                                        \
   {                                                                            \
-    dlog("Failed to read at line\n");                                          \
     fclose(fileptr);                                                           \
     return 1;                                                                  \
   }
@@ -125,7 +123,6 @@ int load_leaderboard(leaderboard_t* leaderboard_buff)
   {
     if(expected_signature[c] != signature[c])
     {
-      dlog("Save file format incorrect\n");
       fclose(load_leaderboard);
       return 1;
     }
@@ -149,7 +146,6 @@ int load_leaderboard(leaderboard_t* leaderboard_buff)
   }
 
   leaderboard_buff->score_count = score_index;
-  dlog("loaded %zu scores\n", leaderboard_buff->score_count);
 
   fclose(load_leaderboard);
   return 0;

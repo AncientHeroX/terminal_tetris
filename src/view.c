@@ -1,6 +1,7 @@
 #include "view.h"
 #include "debug.h"
 #include "numbers.h"
+#include "save.h"
 #include <assert.h>
 #include <curses.h>
 #include <ncurses.h>
@@ -375,5 +376,71 @@ void render_game_over(View*       view,
   else
   {
     w_print_continue(view->game, next_line);
+  }
+}
+
+
+static inline int create_rank(char* dest, const int place)
+{
+  switch(place)
+  {
+  case 1:
+    memcpy(dest, "1st", sizeof(char) * 3);
+    return 4;
+    break;
+  case 2:
+    memcpy(dest, "2nd", sizeof(char) * 3);
+    return 4;
+    break;
+  case 3:
+    memcpy(dest, "3rd", sizeof(char) * 3);
+    return 4;
+    break;
+  default:
+    return snprintf(dest, 5, "%dth", place);
+  }
+}
+
+void render_leader_board(View* view, const leaderboard_t* leaderboard, int y)
+{
+  const char title[]         = "HIGH SCORES";
+  const char table_headers[] = "RANK    NAME    SCORE";
+
+  clear_line(view->game, y);
+  wmove(view->game, y, GET_CENTER_IN_GAMEWINDOW(sizeof(title)));
+  waddnstr(view->game, title, sizeof(title));
+
+  y += 2;
+
+  int table_start = GET_CENTER_IN_GAMEWINDOW(sizeof(table_headers));
+
+  clear_line(view->game, y);
+  wmove(view->game, y, table_start);
+  waddnstr(view->game, table_headers, sizeof(table_headers));
+
+  y += 2;
+  for(ssize_t s = leaderboard->score_count - 1; s >= 0; --s)
+  {
+    char score_buffer[TETRIS_WIDTH * BLOCK_WIDTH];
+    memset(score_buffer, ' ', sizeof(score_buffer));
+
+    const int end     = create_rank(score_buffer, leaderboard->score_count - s);
+    score_buffer[end] = ' ';
+
+    /* Aligned to "NAME" in table_headers */
+    strncpy(score_buffer + 7, leaderboard->names[s], 3 * sizeof(char));
+
+    /* Aligned to "SCORE" in table_headers */
+    const int len = snprintf(score_buffer + 15,
+                             sizeof(score_buffer) - 15,
+                             "%d",
+                             leaderboard->scores[s]);
+
+    /* Move to start and print*/
+    clear_line(view->game, y);
+    wmove(view->game, y++, table_start);
+    waddnstr(view->game, score_buffer, 15 + len);
+
+    clear_line(view->game, y);
   }
 }
