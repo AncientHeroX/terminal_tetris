@@ -1,12 +1,13 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "sound.h"
+#include "debug.h"
 #include "view.h"
 #include "game_engine.h"
 
-#define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 
 #define TARGET_FPS 60.0f
