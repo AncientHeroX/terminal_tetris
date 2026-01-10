@@ -12,6 +12,9 @@
 #define TARGET_FPS 60.0f
 static const long frame_time_us = 1000000 / TARGET_FPS;
 
+#define TIME_DIFF(n, s)                                                        \
+  ((n.tv_sec - s.tv_sec) * 1000000LL + (n.tv_nsec - s.tv_nsec) / 1000LL)
+
 int main()
 {
   View* game_view = (View*)malloc(sizeof(View));
@@ -31,8 +34,7 @@ int main()
   while(1)
   {
     clock_gettime(CLOCK_REALTIME, &now);
-    long delta_time_us = (now.tv_sec - start.tv_sec) * 1000000LL
-                         + (now.tv_nsec - start.tv_nsec) / 1000LL;
+    long delta_time_us = TIME_DIFF(now, start);
 
     update(data, game_sound, delta_time_us);
 
@@ -43,7 +45,8 @@ int main()
     view_refresh(game_view);
     start = now;
 
-    long sleep_time = delta_time_us - frame_time_us;
+    long sleep_time = frame_time_us - delta_time_us;
+
     if(sleep_time > 0)
     {
       usleep(sleep_time);
