@@ -36,7 +36,9 @@ int main()
   {
     clock_gettime(CLOCK_REALTIME, &now);
     long delta_time_us = TIME_DIFF(now, start);
+    start              = now;
 
+    /* Game loop start */
     update(data, game_sound, delta_time_us);
 
     view_clear(game_view);
@@ -44,9 +46,10 @@ int main()
     draw(game_view, data);
 
     view_refresh(game_view);
-    start = now;
+    /* Game loop end */
 
-    long sleep_time = frame_time_us - delta_time_us;
+    clock_gettime(CLOCK_REALTIME, &now);
+    long sleep_time = frame_time_us - TIME_DIFF(now, start);
 
     if(sleep_time > 0)
     {
